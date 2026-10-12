@@ -12,6 +12,7 @@ object AlarmScheduler {
     fun schedule(context: Context, from: ZonedDateTime = ZonedDateTime.now()): ScheduledAlarm? {
         val alarmManager = context.getSystemService(AlarmManager::class.java)
         val next = next(context, alarmManager, from)
+        UpcomingNotice.update(context, next)
         if (next == null) {
             alarmManager.cancel(alarmIntent(context, alarmId = null))
             return null

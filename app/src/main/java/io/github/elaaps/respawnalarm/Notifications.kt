@@ -22,6 +22,13 @@ class Notifications(private val context: Context) {
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_INFO, context.getString(R.string.channel_info), NotificationManager.IMPORTANCE_LOW),
         )
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_UPCOMING,
+                context.getString(R.string.channel_upcoming),
+                NotificationManager.IMPORTANCE_LOW,
+            ),
+        )
     }
 
     fun ringing(target: String?, durationMs: Long, snoozesLeft: Int): Notification = alarmBuilder(target)
@@ -109,6 +116,35 @@ class Notifications(private val context: Context) {
         manager.notify(ID_DONE, notification)
     }
 
+    fun upcoming(next: ScheduledAlarm) {
+        val ringAtMs = next.at.toInstant().toEpochMilli()
+        val untilRingMs = ringAtMs - System.currentTimeMillis()
+        if (untilRingMs <= 0) return
+        val open = PendingIntent.getActivity(
+            context,
+            REQUEST_MAIN,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val skip = Notification.Action.Builder(null, context.getString(R.string.action_skip), UpcomingNotice.skipIntent(context, next))
+        val notification = Notification.Builder(context, CHANNEL_UPCOMING)
+            .setSmallIcon(R.drawable.ic_stat_alarm)
+            .setContentTitle(context.getString(R.string.notif_upcoming_title, formatClockTime(context, next.at.toLocalTime())))
+            .setContentText(next.alarm.label.ifBlank { daysSummary(context, next.alarm.days) })
+            .setWhen(ringAtMs)
+            .setShowWhen(true)
+            .setUsesChronometer(true)
+            .setChronometerCountDown(true)
+            .setOnlyAlertOnce(true)
+            .setTimeoutAfter(untilRingMs)
+            .setContentIntent(open)
+            .addAction(skip.build())
+            .build()
+        manager.notify(ID_UPCOMING, notification)
+    }
+
+    fun cancelUpcoming() = manager.cancel(ID_UPCOMING)
+
     fun update(notification: Notification) = manager.notify(ID_SESSION, notification)
 
     private fun alarmBuilder(target: String?): Notification.Builder {
@@ -156,6 +192,9 @@ class Notifications(private val context: Context) {
     companion object {
         const val ID_SESSION = 1
         private const val ID_DONE = 2
+        private const val ID_UPCOMING = 3
+        private const val CHANNEL_UPCOMING = "upcoming"
+        private const val REQUEST_MAIN = 5
         private const val CHANNEL_ALARM = "alarm"
         private const val CHANNEL_INFO = "info"
         private const val REQUEST_RINGING = 1

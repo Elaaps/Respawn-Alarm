@@ -112,5 +112,9 @@
     <string name="volume_phone">Volume du téléphone</string>
     <string name="volume_max">Maximum</string>
 
+    <string name="channel_upcoming">Alarmes à venir</string>
+    <string name="notif_upcoming_title">Alarme à %1$s</string>
+    <string name="action_skip">Sauter</string>
+
     <string name="search">Rechercher</string>
 </resources>

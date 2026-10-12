@@ -71,6 +71,11 @@
             android:exported="false" />
 
         <receiver
+            android:name=".UpcomingReceiver"
+            android:directBootAware="true"
+            android:exported="false" />
+
+        <receiver
             android:name=".BootReceiver"
             android:directBootAware="true"
             android:exported="true">

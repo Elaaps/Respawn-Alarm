@@ -111,5 +111,9 @@
     <string name="volume_phone">Phone volume</string>
     <string name="volume_max">Maximum</string>
 
+    <string name="channel_upcoming">Upcoming alarms</string>
+    <string name="notif_upcoming_title">Alarm at %1$s</string>
+    <string name="action_skip">Skip</string>
+
     <string name="search">Search</string>
 </resources>
