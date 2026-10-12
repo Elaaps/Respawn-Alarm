@@ -76,6 +76,8 @@
     <string name="section_overrides">Réglages de cette alarme</string>
     <string name="skip_next">Sauter la prochaine sonnerie</string>
 
+    <string name="settings_title">Paramètres</string>
+
     <string name="section_alarm">Alarme</string>
     <string-array name="day_letters">
         <item>L</item>
@@ -88,8 +90,27 @@
     </string-array>
     <string name="next_need_target">Choisis d\'abord l\'appli cible.</string>
     <string name="next_date_pattern">EEEE d MMMM</string>
+    <string name="section_stop">Pour l\'arrêter</string>
     <string name="play_time">Durée de jeu</string>
+    <string name="max_inactivity">Inactivité max</string>
+    <string name="loading_grace">Temps de chargement du jeu</string>
+    <string name="loading_grace_use">Silence pendant le chargement</string>
+    <string name="loading_grace_length">Au maximum</string>
+    <string name="seconds_value">%1$d s</string>
     <string name="target_app">Appli cible</string>
+    <string name="section_permissions">Autorisations</string>
+    <string name="all_granted">Tout est autorisé.</string>
+    <string name="grant">Autoriser</string>
+    <string name="permissions_hint">Si un réglage est grisé : Infos sur l\'appli → ⋮ → Autoriser les paramètres restreints.</string>
+    <string name="section_test">Tester</string>
+    <string name="test_ringing">L\'alarme sonne en ce moment.</string>
+    <string name="test_diag_running">Diagnostic en cours, regarde la notification.</string>
+    <string name="test_diag_hint">Diagnostic : pendant 60 s, la notification affiche l\'appli au premier plan et le nombre d\'appuis détectés. Lance le jeu, joue, puis tire le volet des notifications.</string>
+    <string name="test_diag_button">Diagnostic (60 s)</string>
+    <string name="test_ring_button">Faire sonner maintenant</string>
+    <string name="ring_now_title">Faire sonner maintenant ?</string>
+    <string name="ring_now_text">La sonnerie ne s\'arrêtera qu\'après %1$s de jeu sur %2$s.</string>
+    <string name="ring">Sonner</string>
     <string name="cancel">Annuler</string>
 
     <string name="use_default">Par défaut (%1$s)</string>
@@ -102,6 +123,7 @@
     <string name="snooze_count">Snoozes autorisés</string>
     <string name="snooze_minutes">Durée</string>
     <string name="minutes_value">%1$d min</string>
+    <string name="section_sound">Son</string>
     <string name="tone">Son d\'alarme</string>
     <string name="tone_system">Son d\'alarme par défaut</string>
     <string name="tone_custom">Son choisi</string>
@@ -111,6 +133,12 @@
     <string name="volume">Volume</string>
     <string name="volume_phone">Volume du téléphone</string>
     <string name="volume_max">Maximum</string>
+    <string name="crescendo">Augmenter progressivement le volume</string>
+    <string name="crescendo_desc">Du silence au volume plein en 30 s</string>
+
+    <string name="section_overlay">Overlay en jeu</string>
+    <string name="overlay_enabled">Afficher</string>
+    <string name="overlay_reset">Réinitialiser la position</string>
 
     <string name="channel_upcoming">Alarmes à venir</string>
     <string name="notif_upcoming_title">Alarme à %1$s</string>

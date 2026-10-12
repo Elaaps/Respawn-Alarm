@@ -58,7 +58,7 @@ import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit) {
+fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
     var alarms by remember { mutableStateOf(store.alarms()) }
@@ -104,6 +104,7 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit) {
                         stringResource(R.string.action_delete_all),
                         enabled = alarms.isNotEmpty(),
                     ) { confirmingDeleteAll = true }
+                    HeaderAction(R.drawable.ic_settings, stringResource(R.string.settings_title), onClick = onSettings)
                 }
             }
         },

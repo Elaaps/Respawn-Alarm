@@ -75,6 +75,8 @@
     <string name="section_overrides">Settings of this alarm</string>
     <string name="skip_next">Skip the next ring</string>
 
+    <string name="settings_title">Settings</string>
+
     <string name="section_alarm">Alarm</string>
     <string-array name="day_letters">
         <item>M</item>
@@ -87,8 +89,27 @@
     </string-array>
     <string name="next_need_target">Pick the target app first.</string>
     <string name="next_date_pattern">EEEE, MMMM d</string>
+    <string name="section_stop">To stop it</string>
     <string name="play_time">Play time</string>
+    <string name="max_inactivity">Max inactivity</string>
+    <string name="loading_grace">Game loading time</string>
+    <string name="loading_grace_use">Keep quiet while the game loads</string>
+    <string name="loading_grace_length">At most</string>
+    <string name="seconds_value">%1$d s</string>
     <string name="target_app">Target app</string>
+    <string name="section_permissions">Permissions</string>
+    <string name="all_granted">Everything is allowed.</string>
+    <string name="grant">Allow</string>
+    <string name="permissions_hint">If a setting is greyed out: App info → ⋮ → Allow restricted settings.</string>
+    <string name="section_test">Test</string>
+    <string name="test_ringing">The alarm is ringing right now.</string>
+    <string name="test_diag_running">Diagnostic running, check the notification.</string>
+    <string name="test_diag_hint">Diagnostic: for 60 s, the notification shows the foreground app and the number of touches detected. Launch the game, play, then pull down the notification shade.</string>
+    <string name="test_diag_button">Diagnostic (60 s)</string>
+    <string name="test_ring_button">Ring now</string>
+    <string name="ring_now_title">Ring now?</string>
+    <string name="ring_now_text">The alarm will only stop after %1$s of play in %2$s.</string>
+    <string name="ring">Ring</string>
     <string name="cancel">Cancel</string>
 
     <string name="use_default">Default (%1$s)</string>
@@ -101,6 +122,7 @@
     <string name="snooze_count">Snoozes allowed</string>
     <string name="snooze_minutes">Length</string>
     <string name="minutes_value">%1$d min</string>
+    <string name="section_sound">Sound</string>
     <string name="tone">Alarm sound</string>
     <string name="tone_system">Default alarm sound</string>
     <string name="tone_custom">Chosen sound</string>
@@ -110,6 +132,12 @@
     <string name="volume">Volume</string>
     <string name="volume_phone">Phone volume</string>
     <string name="volume_max">Maximum</string>
+    <string name="crescendo">Gradually increase volume</string>
+    <string name="crescendo_desc">From silence to full volume over 30 s</string>
+
+    <string name="section_overlay">In-game overlay</string>
+    <string name="overlay_enabled">Show</string>
+    <string name="overlay_reset">Reset position</string>
 
     <string name="channel_upcoming">Upcoming alarms</string>
     <string name="notif_upcoming_title">Alarm at %1$s</string>

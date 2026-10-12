@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
 private sealed interface Screen {
     data object Home : Screen
     data class Editor(val alarmId: Long, val pickTimeFirst: Boolean = false) : Screen
+    data object Settings : Screen
 }
 
 private val ScreenSaver = Saver<Screen, String>(
@@ -45,10 +46,12 @@ private val ScreenSaver = Saver<Screen, String>(
         when (screen) {
             Screen.Home -> SCREEN_HOME
             is Screen.Editor -> SCREEN_EDITOR_PREFIX + screen.alarmId
+            Screen.Settings -> SCREEN_SETTINGS
         }
     },
     restore = { saved ->
         when {
+            saved == SCREEN_SETTINGS -> Screen.Settings
             saved.startsWith(SCREEN_EDITOR_PREFIX) ->
                 saved.removePrefix(SCREEN_EDITOR_PREFIX).toLongOrNull()?.let { Screen.Editor(it) } ?: Screen.Home
             else -> Screen.Home
@@ -57,6 +60,7 @@ private val ScreenSaver = Saver<Screen, String>(
 )
 
 private const val SCREEN_HOME = "home"
+private const val SCREEN_SETTINGS = "settings"
 private const val SCREEN_EDITOR_PREFIX = "editor:"
 
 @Composable
@@ -123,7 +127,9 @@ private fun ScreenContent(current: Screen, onNavigate: (Screen) -> Unit) {
         Screen.Home -> HomeScreen(
             onEdit = { onNavigate(Screen.Editor(it)) },
             onAdd = { onNavigate(Screen.Editor(it, pickTimeFirst = true)) },
+            onSettings = { onNavigate(Screen.Settings) },
         )
         is Screen.Editor -> AlarmEditorScreen(current.alarmId, current.pickTimeFirst, onBack = { onNavigate(Screen.Home) })
+        Screen.Settings -> SettingsScreen(onBack = { onNavigate(Screen.Home) })
     }
 }
