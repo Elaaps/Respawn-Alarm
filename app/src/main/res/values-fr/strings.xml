@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_app">aucune appli</string>
+
+    <string name="channel_alarm">Alarme</string>
+    <string name="channel_info">Diagnostic et fin d\'alarme</string>
+    <string name="notif_ringing_title">Réveil !</string>
+    <string name="notif_ringing_text">Joue %1$s à %2$s pour l\'arrêter</string>
+    <string name="notif_reset_title">Compteur remis à zéro</string>
+    <string name="notif_reset_text">Retourne dans %1$s et touche l\'écran</string>
+    <string name="notif_playing_title">En jeu : %1$s restantes</string>
+    <string name="notif_playing_text">Reste dans %1$s, un appui au moins toutes les %2$d s</string>
+    <string name="notif_diag_title">Diagnostic : %1$s</string>
+    <string name="notif_diag_touches">Appuis détectés : %1$d</string>
+    <string name="notif_diag_no_overlay">Affichage par-dessus d\'autres applis non autorisé</string>
+    <string name="notif_diag_foreground">Appli au premier plan : %1$s</string>
+    <string name="notif_diag_unknown">inconnue</string>
+    <string name="notif_interrupted_title">Alarme interrompue</string>
+    <string name="notif_interrupted_text">Ouvre-la pour la faire sonner à nouveau</string>
+    <string name="notif_done_title">Bravo, alarme arrêtée</string>
+    <string name="notif_done_text">%1$s de jeu sans pause</string>
+    <string name="notif_snoozed_title">Snooze en cours</string>
+    <string name="notif_snoozed_text">Sonne à nouveau à %1$s, sauf si tu joues à %2$s avant</string>
+    <plurals name="action_snooze">
+        <item quantity="one">Snooze (%d restant)</item>
+        <item quantity="many">Snooze (%d restants)</item>
+        <item quantity="other">Snooze (%d restants)</item>
+    </plurals>
+    <string name="action_launch">Lancer %1$s</string>
+    <string name="action_stop">Arrêter</string>
+
+    <string name="ringing_message">Joue %1$s à %2$s pour arrêter l\'alarme.</string>
+    <string name="action_emergency">Arrêt d\'urgence</string>
+    <string name="emergency_title">Arrêter l\'alarme sans jouer ?</string>
+    <string name="emergency_subtitle">Utilise le verrouillage de l\'écran</string>
+    <string name="emergency_confirm">Arrêter</string>
+    <string name="notif_emergency_title">Alarme arrêtée sans jouer</string>
+
+    <string name="cancel">Annuler</string>
+</resources>

@@ -1,4 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Respawn Alarm</string>
+    <string name="no_app">no app</string>
+
+    <string name="channel_alarm">Alarm</string>
+    <string name="channel_info">Diagnostic and alarm end</string>
+    <string name="notif_ringing_title">Wake up!</string>
+    <string name="notif_ringing_text">Play %1$s of %2$s to stop it</string>
+    <string name="notif_reset_title">Counter reset</string>
+    <string name="notif_reset_text">Go back to %1$s and touch the screen</string>
+    <string name="notif_playing_title">Playing: %1$s left</string>
+    <string name="notif_playing_text">Stay in %1$s, touch the screen at least every %2$d s</string>
+    <string name="notif_diag_title">Diagnostic: %1$s</string>
+    <string name="notif_diag_touches">Touches detected: %1$d</string>
+    <string name="notif_diag_no_overlay">Display over other apps not allowed</string>
+    <string name="notif_diag_foreground">Foreground app: %1$s</string>
+    <string name="notif_diag_unknown">unknown</string>
+    <string name="notif_interrupted_title">Alarm interrupted</string>
+    <string name="notif_interrupted_text">Open it to make it ring again</string>
+    <string name="notif_done_title">Well done, alarm stopped</string>
+    <string name="notif_done_text">%1$s of uninterrupted play</string>
+    <string name="notif_snoozed_title">Snoozed</string>
+    <string name="notif_snoozed_text">Rings again at %1$s, unless you play %2$s first</string>
+    <plurals name="action_snooze">
+        <item quantity="one">Snooze (%d left)</item>
+        <item quantity="other">Snooze (%d left)</item>
+    </plurals>
+    <string name="action_launch">Launch %1$s</string>
+    <string name="action_stop">Stop</string>
+
+    <string name="ringing_message">Play %1$s of %2$s to stop the alarm.</string>
+    <string name="action_emergency">Emergency stop</string>
+    <string name="emergency_title">Stop the alarm without playing?</string>
+    <string name="emergency_subtitle">Use your screen lock</string>
+    <string name="emergency_confirm">Stop</string>
+    <string name="notif_emergency_title">Alarm stopped without playing</string>
+
+    <string name="cancel">Cancel</string>
 </resources>
