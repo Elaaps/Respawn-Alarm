@@ -49,5 +49,67 @@
     <string name="emergency_confirm">Stop</string>
     <string name="notif_emergency_title">Alarm stopped without playing</string>
 
+    <string name="home_no_alarm">No alarm set</string>
+    <string name="home_next_alarm">Alarm in %1$d h %2$d min</string>
+    <string name="home_next_alarm_at">%1$s at %2$s</string>
+    <string name="action_add_alarm">Add an alarm</string>
+    <string name="action_delete_all">Delete all alarms</string>
+    <string name="delete_all_title">Delete all alarms?</string>
+    <plurals name="delete_all_text">
+        <item quantity="one">%d alarm will be deleted.</item>
+        <item quantity="other">%d alarms will be deleted.</item>
+    </plurals>
+    <string name="alarm_deleted">Alarm deleted</string>
+    <string name="undo">Undo</string>
+    <string name="delete">Delete</string>
+    <string name="days_once">Once</string>
+    <string name="days_every_day">Every day</string>
+    <string name="days_weekdays">Weekdays</string>
+    <string name="days_weekend">Weekend</string>
+    <string name="short_date_pattern">EEE, MMM d</string>
+    <string name="alarm_skipped">Skipped on %1$s</string>
+
+    <string name="editor_title">Edit alarm</string>
+    <string name="delete_alarm">Delete this alarm</string>
+    <string name="alarm_label">Label</string>
+    <string name="section_overrides">Settings of this alarm</string>
+    <string name="skip_next">Skip the next ring</string>
+
+    <string name="section_alarm">Alarm</string>
+    <string-array name="day_letters">
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
+        <item>S</item>
+    </string-array>
+    <string name="next_need_target">Pick the target app first.</string>
+    <string name="next_date_pattern">EEEE, MMMM d</string>
+    <string name="play_time">Play time</string>
+    <string name="target_app">Target app</string>
     <string name="cancel">Cancel</string>
+
+    <string name="use_default">Default (%1$s)</string>
+    <string name="done">Done</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="choose_app">Choose an app…</string>
+    <string name="snooze">Snooze</string>
+    <string name="snooze_value">%1$d × %2$d min</string>
+    <string name="snooze_count">Snoozes allowed</string>
+    <string name="snooze_minutes">Length</string>
+    <string name="minutes_value">%1$d min</string>
+    <string name="tone">Alarm sound</string>
+    <string name="tone_system">Default alarm sound</string>
+    <string name="tone_custom">Chosen sound</string>
+    <string name="tone_picker_title">Alarm sound</string>
+    <string name="tone_pick">Choose a sound…</string>
+    <string name="vibrate">Vibration</string>
+    <string name="volume">Volume</string>
+    <string name="volume_phone">Phone volume</string>
+    <string name="volume_max">Maximum</string>
+
+    <string name="search">Search</string>
 </resources>

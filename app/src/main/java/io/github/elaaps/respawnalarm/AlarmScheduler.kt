@@ -16,7 +16,7 @@ object AlarmScheduler {
             alarmManager.cancel(alarmIntent(context, alarmId = null))
             return null
         }
-        val info = AlarmManager.AlarmClockInfo(next.at.toInstant().toEpochMilli(), null)
+        val info = AlarmManager.AlarmClockInfo(next.at.toInstant().toEpochMilli(), showIntent(context))
         alarmManager.setAlarmClock(info, alarmIntent(context, next.alarm.id))
         return next
     }
@@ -41,4 +41,10 @@ object AlarmScheduler {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 
+    private fun showIntent(context: Context): PendingIntent = PendingIntent.getActivity(
+        context,
+        0,
+        Intent(context, MainActivity::class.java),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
 }

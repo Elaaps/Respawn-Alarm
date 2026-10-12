@@ -49,5 +49,68 @@
     <string name="emergency_confirm">Arrêter</string>
     <string name="notif_emergency_title">Alarme arrêtée sans jouer</string>
 
+    <string name="home_no_alarm">Aucune alarme</string>
+    <string name="home_next_alarm">Alarme dans %1$d h %2$d min</string>
+    <string name="home_next_alarm_at">%1$s à %2$s</string>
+    <string name="action_add_alarm">Ajouter une alarme</string>
+    <string name="action_delete_all">Supprimer toutes les alarmes</string>
+    <string name="delete_all_title">Supprimer toutes les alarmes ?</string>
+    <plurals name="delete_all_text">
+        <item quantity="one">%d alarme sera supprimée.</item>
+        <item quantity="many">%d alarmes seront supprimées.</item>
+        <item quantity="other">%d alarmes seront supprimées.</item>
+    </plurals>
+    <string name="alarm_deleted">Alarme supprimée</string>
+    <string name="undo">Annuler</string>
+    <string name="delete">Supprimer</string>
+    <string name="days_once">Une fois</string>
+    <string name="days_every_day">Tous les jours</string>
+    <string name="days_weekdays">En semaine</string>
+    <string name="days_weekend">Le week-end</string>
+    <string name="short_date_pattern">EEE d MMM</string>
+    <string name="alarm_skipped">Sautée le %1$s</string>
+
+    <string name="editor_title">Modifier l\'alarme</string>
+    <string name="delete_alarm">Supprimer cette alarme</string>
+    <string name="alarm_label">Libellé</string>
+    <string name="section_overrides">Réglages de cette alarme</string>
+    <string name="skip_next">Sauter la prochaine sonnerie</string>
+
+    <string name="section_alarm">Alarme</string>
+    <string-array name="day_letters">
+        <item>L</item>
+        <item>M</item>
+        <item>M</item>
+        <item>J</item>
+        <item>V</item>
+        <item>S</item>
+        <item>D</item>
+    </string-array>
+    <string name="next_need_target">Choisis d\'abord l\'appli cible.</string>
+    <string name="next_date_pattern">EEEE d MMMM</string>
+    <string name="play_time">Durée de jeu</string>
+    <string name="target_app">Appli cible</string>
     <string name="cancel">Annuler</string>
+
+    <string name="use_default">Par défaut (%1$s)</string>
+    <string name="done">OK</string>
+    <string name="on">Activé</string>
+    <string name="off">Désactivé</string>
+    <string name="choose_app">Choisir une appli…</string>
+    <string name="snooze">Snooze</string>
+    <string name="snooze_value">%1$d × %2$d min</string>
+    <string name="snooze_count">Snoozes autorisés</string>
+    <string name="snooze_minutes">Durée</string>
+    <string name="minutes_value">%1$d min</string>
+    <string name="tone">Son d\'alarme</string>
+    <string name="tone_system">Son d\'alarme par défaut</string>
+    <string name="tone_custom">Son choisi</string>
+    <string name="tone_picker_title">Son d\'alarme</string>
+    <string name="tone_pick">Choisir un son…</string>
+    <string name="vibrate">Vibreur</string>
+    <string name="volume">Volume</string>
+    <string name="volume_phone">Volume du téléphone</string>
+    <string name="volume_max">Maximum</string>
+
+    <string name="search">Rechercher</string>
 </resources>
