@@ -29,6 +29,19 @@
     <string name="action_launch">Launch %1$s</string>
     <string name="action_stop">Stop</string>
 
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_desc">For the alarm and the time left.</string>
+    <string name="perm_usage_title">Usage access</string>
+    <string name="perm_usage_desc">To know which app is in the foreground.</string>
+    <string name="perm_overlay_title">Display over other apps</string>
+    <string name="perm_overlay_desc">To detect screen touches while you play.</string>
+    <string name="perm_full_screen_title">Full screen notifications</string>
+    <string name="perm_full_screen_desc">To show the alarm on the lock screen.</string>
+    <string name="perm_battery_title">Disable battery optimization</string>
+    <string name="perm_battery_desc">So that the system does not kill the alarm.</string>
+    <string name="perm_exact_alarm_title">Alarms &amp; reminders</string>
+    <string name="perm_exact_alarm_desc">To ring right on time.</string>
+
     <string name="ringing_message">Play %1$s of %2$s to stop the alarm.</string>
     <string name="action_emergency">Emergency stop</string>
     <string name="emergency_title">Stop the alarm without playing?</string>

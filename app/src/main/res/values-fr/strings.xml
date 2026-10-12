@@ -29,6 +29,19 @@
     <string name="action_launch">Lancer %1$s</string>
     <string name="action_stop">Arrêter</string>
 
+    <string name="perm_notifications_title">Notifications</string>
+    <string name="perm_notifications_desc">Pour la sonnerie et le temps restant.</string>
+    <string name="perm_usage_title">Accès aux données d\'utilisation</string>
+    <string name="perm_usage_desc">Pour savoir quelle appli est au premier plan.</string>
+    <string name="perm_overlay_title">Afficher par-dessus d\'autres applis</string>
+    <string name="perm_overlay_desc">Pour détecter les appuis sur l\'écran pendant le jeu.</string>
+    <string name="perm_full_screen_title">Notifications en plein écran</string>
+    <string name="perm_full_screen_desc">Pour afficher l\'alarme sur l\'écran verrouillé.</string>
+    <string name="perm_battery_title">Désactiver l\'optimisation de la batterie</string>
+    <string name="perm_battery_desc">Pour que le système ne coupe pas l\'alarme.</string>
+    <string name="perm_exact_alarm_title">Alarmes et rappels</string>
+    <string name="perm_exact_alarm_desc">Pour sonner à l\'heure pile.</string>
+
     <string name="ringing_message">Joue %1$s à %2$s pour arrêter l\'alarme.</string>
     <string name="action_emergency">Arrêt d\'urgence</string>
     <string name="emergency_title">Arrêter l\'alarme sans jouer ?</string>
