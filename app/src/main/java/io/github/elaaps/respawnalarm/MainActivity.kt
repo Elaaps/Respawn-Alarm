@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +40,7 @@ private sealed interface Screen {
     data object Home : Screen
     data class Editor(val alarmId: Long, val pickTimeFirst: Boolean = false) : Screen
     data object Settings : Screen
+    data object Onboarding : Screen
 }
 
 private val ScreenSaver = Saver<Screen, String>(
@@ -47,11 +49,13 @@ private val ScreenSaver = Saver<Screen, String>(
             Screen.Home -> SCREEN_HOME
             is Screen.Editor -> SCREEN_EDITOR_PREFIX + screen.alarmId
             Screen.Settings -> SCREEN_SETTINGS
+            Screen.Onboarding -> SCREEN_ONBOARDING
         }
     },
     restore = { saved ->
         when {
             saved == SCREEN_SETTINGS -> Screen.Settings
+            saved == SCREEN_ONBOARDING -> Screen.Onboarding
             saved.startsWith(SCREEN_EDITOR_PREFIX) ->
                 saved.removePrefix(SCREEN_EDITOR_PREFIX).toLongOrNull()?.let { Screen.Editor(it) } ?: Screen.Home
             else -> Screen.Home
@@ -62,10 +66,14 @@ private val ScreenSaver = Saver<Screen, String>(
 private const val SCREEN_HOME = "home"
 private const val SCREEN_SETTINGS = "settings"
 private const val SCREEN_EDITOR_PREFIX = "editor:"
+private const val SCREEN_ONBOARDING = "onboarding"
 
 @Composable
 private fun App() {
-    var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Home) }
+    val context = LocalContext.current
+    var screen by rememberSaveable(stateSaver = ScreenSaver) {
+        mutableStateOf(if (AlarmStore(context).onboardingDone) Screen.Home else Screen.Onboarding)
+    }
     var backProgress by remember { mutableFloatStateOf(0f) }
     var backFromLeft by remember { mutableStateOf(true) }
     PredictiveBackHandler(enabled = screen != Screen.Home) { events ->
@@ -128,8 +136,10 @@ private fun ScreenContent(current: Screen, onNavigate: (Screen) -> Unit) {
             onEdit = { onNavigate(Screen.Editor(it)) },
             onAdd = { onNavigate(Screen.Editor(it, pickTimeFirst = true)) },
             onSettings = { onNavigate(Screen.Settings) },
+            onSetup = { onNavigate(Screen.Onboarding) },
         )
         is Screen.Editor -> AlarmEditorScreen(current.alarmId, current.pickTimeFirst, onBack = { onNavigate(Screen.Home) })
-        Screen.Settings -> SettingsScreen(onBack = { onNavigate(Screen.Home) })
+        Screen.Settings -> SettingsScreen(onBack = { onNavigate(Screen.Home) }, onSetup = { onNavigate(Screen.Onboarding) })
+        Screen.Onboarding -> OnboardingScreen(onDone = { onNavigate(Screen.Home) })
     }
 }

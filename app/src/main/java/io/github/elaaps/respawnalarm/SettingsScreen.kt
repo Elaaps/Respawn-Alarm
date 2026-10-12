@@ -40,7 +40,7 @@ import io.github.elaaps.respawnalarm.GlobalSettings.Companion.LOADING_GRACE_RANG
 import io.github.elaaps.respawnalarm.GlobalSettings.Companion.LOADING_GRACE_STEP_SEC
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
     var settings by remember { mutableStateOf(store.settings()) }
@@ -69,7 +69,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             SessionCard(settings, ::update)
             SoundCard(settings, ::update)
             OverlayCard(settings, ::update, onResetPosition = store::resetOverlayPosition)
-            PermissionsCard(resumeCount)
+            PermissionsCard(resumeCount, onSetup)
             TestCard(settings)
         }
     }
@@ -164,7 +164,7 @@ private fun stepInactivity(settings: GlobalSettings, deltaSec: Int): Int =
     (settings.inactivitySec + deltaSec).coerceIn(INACTIVITY_RANGE_SEC)
 
 @Composable
-private fun PermissionsCard(resumeCount: Int) {
+private fun PermissionsCard(resumeCount: Int, onSetup: () -> Unit) {
     val context = LocalContext.current
     var requestCount by remember { mutableIntStateOf(0) }
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -202,6 +202,9 @@ private fun PermissionsCard(resumeCount: Int) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        OutlinedButton(onClick = onSetup, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.settings_run_setup))
+        }
     }
 }
 

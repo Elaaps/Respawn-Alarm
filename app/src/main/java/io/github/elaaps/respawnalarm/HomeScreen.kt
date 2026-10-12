@@ -58,14 +58,16 @@ import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> Unit) {
+fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
     var alarms by remember { mutableStateOf(store.alarms()) }
     var settings by remember { mutableStateOf(store.settings()) }
     var next by remember { mutableStateOf(AlarmScheduler.nextScheduled(context)) }
     var confirmingDeleteAll by remember { mutableStateOf(false) }
+    var missing by remember { mutableStateOf(missingPermissions(context)) }
     LifecycleResumeEffect(Unit) {
+        missing = missingPermissions(context)
         alarms = store.alarms()
         settings = store.settings()
         next = AlarmScheduler.nextScheduled(context)
@@ -129,6 +131,9 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> 
             ),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (missing.isNotEmpty()) {
+                item(key = KEY_BANNER) { MissingPermissionsBanner(missing, onClick = onSetup, Modifier.animateItem()) }
+            }
             items(alarms, key = { it.id }) { alarm ->
                 SwipeToDelete(onDelete = { delete(alarm) }, modifier = Modifier.animateItem()) {
                     AlarmRow(
@@ -162,6 +167,27 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> 
         )
     }
 }
+
+@Composable
+private fun MissingPermissionsBanner(missing: List<Permission>, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(stringResource(R.string.banner_missing_title), style = MaterialTheme.typography.titleMedium)
+            Text(missing.map { stringResource(it.title) }.joinToString(", "))
+            Text(stringResource(R.string.banner_missing_action), style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+private fun missingPermissions(context: Context): List<Permission> =
+    Permission.entries.filterNot { Permissions.isGranted(context, it) }
 
 @Composable
 private fun SwipeToDelete(onDelete: () -> Unit, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
@@ -275,4 +301,5 @@ fun pickTime(context: Context, initial: LocalTime, onPick: (LocalTime) -> Unit) 
 
 private const val NEW_ALARM_HOUR = 7
 
+private const val KEY_BANNER = "banner"
 private val LIST_BOTTOM_SPACE = 88.dp

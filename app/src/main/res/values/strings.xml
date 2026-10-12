@@ -69,6 +69,23 @@
     <string name="short_date_pattern">EEE, MMM d</string>
     <string name="alarm_skipped">Skipped on %1$s</string>
 
+    <string name="banner_missing_title">The alarm cannot work properly</string>
+    <string name="banner_missing_action">Tap to fix it</string>
+
+    <string name="onboarding_step">Step %1$d of %2$d</string>
+    <string name="onboarding_welcome_title">Welcome</string>
+    <string name="onboarding_welcome_text">To stop this alarm, you will have to play. It first needs a few permissions.</string>
+    <string name="onboarding_start">Start</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_later">Later</string>
+    <string name="onboarding_finish">Finish</string>
+    <string name="vendor_title">%1$s phones can kill the alarm</string>
+    <string name="vendor_text">Battery optimization stops apps in the background, alarms included. dontkillmyapp.com explains how to fix it.</string>
+    <string name="vendor_open_guide">dontkillmyapp.com</string>
+    <string name="diag_step_title">Check that touches are detected</string>
+    <string name="diag_step_text">Start the diagnostic, open your game, play for a few seconds, then pull down the notification shade: the touch count must go up. Otherwise, the alarm can never be stopped.</string>
+    <string name="diag_step_button">Start the diagnostic</string>
+
     <string name="editor_title">Edit alarm</string>
     <string name="delete_alarm">Delete this alarm</string>
     <string name="alarm_label">Label</string>
@@ -101,6 +118,7 @@
     <string name="all_granted">Everything is allowed.</string>
     <string name="grant">Allow</string>
     <string name="permissions_hint">If a setting is greyed out: App info → ⋮ → Allow restricted settings.</string>
+    <string name="settings_run_setup">Run the setup assistant again</string>
     <string name="section_test">Test</string>
     <string name="test_ringing">The alarm is ringing right now.</string>
     <string name="test_diag_running">Diagnostic running, check the notification.</string>

@@ -70,6 +70,23 @@
     <string name="short_date_pattern">EEE d MMM</string>
     <string name="alarm_skipped">Sautée le %1$s</string>
 
+    <string name="banner_missing_title">L\'alarme ne peut pas fonctionner correctement</string>
+    <string name="banner_missing_action">Appuie pour corriger</string>
+
+    <string name="onboarding_step">Étape %1$d sur %2$d</string>
+    <string name="onboarding_welcome_title">Bienvenue</string>
+    <string name="onboarding_welcome_text">Pour arrêter cette alarme, il faudra jouer. Elle a d\'abord besoin de quelques autorisations.</string>
+    <string name="onboarding_start">Commencer</string>
+    <string name="onboarding_next">Suivant</string>
+    <string name="onboarding_later">Plus tard</string>
+    <string name="onboarding_finish">Terminer</string>
+    <string name="vendor_title">Les téléphones %1$s peuvent tuer l\'alarme</string>
+    <string name="vendor_text">L\'optimisation de la batterie arrête les applis en arrière-plan, alarmes comprises. dontkillmyapp.com explique comment régler ce problème.</string>
+    <string name="vendor_open_guide">dontkillmyapp.com</string>
+    <string name="diag_step_title">Vérifie que les appuis sont détectés</string>
+    <string name="diag_step_text">Lance le diagnostic, ouvre ton jeu, joue quelques secondes, puis tire le volet des notifications : le nombre d\'appuis doit augmenter. Sinon, l\'alarme ne pourra jamais être arrêtée.</string>
+    <string name="diag_step_button">Lancer le diagnostic</string>
+
     <string name="editor_title">Modifier l\'alarme</string>
     <string name="delete_alarm">Supprimer cette alarme</string>
     <string name="alarm_label">Libellé</string>
@@ -102,6 +119,7 @@
     <string name="all_granted">Tout est autorisé.</string>
     <string name="grant">Autoriser</string>
     <string name="permissions_hint">Si un réglage est grisé : Infos sur l\'appli → ⋮ → Autoriser les paramètres restreints.</string>
+    <string name="settings_run_setup">Relancer l\'assistant</string>
     <string name="section_test">Tester</string>
     <string name="test_ringing">L\'alarme sonne en ce moment.</string>
     <string name="test_diag_running">Diagnostic en cours, regarde la notification.</string>
