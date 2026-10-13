@@ -69,8 +69,10 @@ class SessionService : Service() {
         if (intent?.action == ACTION_EMERGENCY_STOP) {
             when (mode) {
                 Mode.ALARM -> {
-                    notifications.emergencyStopped()
-                    record(emergencyStop = true)
+                    if (!completing) {
+                        notifications.emergencyStopped()
+                        record(emergencyStop = true)
+                    }
                     finish()
                 }
                 null -> stopSelf(startId)
