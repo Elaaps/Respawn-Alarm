@@ -79,7 +79,7 @@ class NextAlarmTest {
     fun `afterRing, of a one-shot alarm, turns it off`() {
         val alarms = listOf(Alarm(id = 1, hour = 7, minute = 0))
 
-        val updated = afterRing(alarms, rangId = 1, today = LocalDate.of(2026, 10, 9))
+        val updated = afterRing(alarms, rangId = 1, now = at(day = 9, hour = 7))
 
         assertEquals(false, updated.single().enabled)
     }
@@ -88,7 +88,7 @@ class NextAlarmTest {
     fun `afterRing, of a repeating alarm, keeps it on`() {
         val alarms = listOf(Alarm(id = 1, hour = 7, minute = 0, days = setOf(DayOfWeek.FRIDAY)))
 
-        val updated = afterRing(alarms, rangId = 1, today = LocalDate.of(2026, 10, 9))
+        val updated = afterRing(alarms, rangId = 1, now = at(day = 9, hour = 7))
 
         assertEquals(true, updated.single().enabled)
     }
@@ -97,9 +97,30 @@ class NextAlarmTest {
     fun `afterRing, of another alarm, leaves a one-shot alarm on`() {
         val alarms = listOf(Alarm(id = 1, hour = 7, minute = 0), Alarm(id = 2, hour = 8, minute = 0))
 
-        val updated = afterRing(alarms, rangId = 2, today = LocalDate.of(2026, 10, 9))
+        val updated = afterRing(alarms, rangId = 2, now = at(day = 9, hour = 8))
 
         assertEquals(true, updated.first().enabled)
+    }
+
+    @Test
+    fun `afterRing, with another one-shot alarm on the same minute, turns both off`() {
+        val alarms = listOf(Alarm(id = 1, hour = 7, minute = 0), Alarm(id = 2, hour = 7, minute = 0))
+
+        val updated = afterRing(alarms, rangId = 1, now = at(day = 9, hour = 7))
+
+        assertEquals(listOf(false, false), updated.map { it.enabled })
+    }
+
+    @Test
+    fun `afterRing, with a repeating alarm on the same minute, keeps it on`() {
+        val alarms = listOf(
+            Alarm(id = 1, hour = 7, minute = 0),
+            Alarm(id = 2, hour = 7, minute = 0, days = setOf(DayOfWeek.FRIDAY)),
+        )
+
+        val updated = afterRing(alarms, rangId = 1, now = at(day = 9, hour = 7))
+
+        assertEquals(listOf(false, true), updated.map { it.enabled })
     }
 
     @Test
@@ -109,7 +130,7 @@ class NextAlarmTest {
             Alarm(id = 2, hour = 7, minute = 0, days = setOf(DayOfWeek.FRIDAY), skippedDate = LocalDate.of(2026, 10, 16)),
         )
 
-        val updated = afterRing(alarms, rangId = 1, today = LocalDate.of(2026, 10, 9))
+        val updated = afterRing(alarms, rangId = 1, now = at(day = 9, hour = 7))
 
         assertEquals(listOf(null, LocalDate.of(2026, 10, 16)), updated.map { it.skippedDate })
     }
