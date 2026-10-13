@@ -1,7 +1,10 @@
 package io.github.elaaps.respawnalarm
 
 import android.app.TimePickerDialog
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -55,6 +58,7 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.launch
 
 @Composable
@@ -66,16 +70,30 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> 
     var next by remember { mutableStateOf(AlarmScheduler.nextScheduled(context)) }
     var confirmingDeleteAll by remember { mutableStateOf(false) }
     var missing by remember { mutableStateOf(missingPermissions(context)) }
+    var now by remember { mutableStateOf(currentMinute()) }
+
+    fun tick() {
+        now = currentMinute()
+        if (next?.at?.isAfter(now) == false) next = AlarmScheduler.nextScheduled(context)
+    }
+
     LifecycleResumeEffect(Unit) {
         missing = missingPermissions(context)
         alarms = store.alarms()
         settings = store.settings()
         next = AlarmScheduler.nextScheduled(context)
-        onPauseOrDispose { }
+        now = currentMinute()
+        val clock = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) = tick()
+        }
+        val filter = IntentFilter(Intent.ACTION_TIME_TICK).apply { addAction(Intent.ACTION_TIME_CHANGED) }
+        context.registerReceiver(clock, filter, Context.RECEIVER_NOT_EXPORTED)
+        onPauseOrDispose { context.unregisterReceiver(clock) }
     }
 
     fun refresh() {
         next = AlarmScheduler.schedule(context)
+        now = currentMinute()
         alarms = store.alarms()
     }
 
@@ -99,7 +117,7 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> 
     Scaffold(
         topBar = {
             Column(Modifier.statusBarsPadding().padding(horizontal = 16.dp).padding(top = 8.dp)) {
-                val (title, subtitle) = nextAlarmHeader(context, next, hasTarget = settings.targetPackage != null)
+                val (title, subtitle) = nextAlarmHeader(context, next, now, hasTarget = settings.targetPackage != null)
                 ScreenHeader(title, subtitle) {
                     HeaderAction(
                         R.drawable.ic_delete_sweep,
@@ -280,14 +298,21 @@ private fun AlarmCard(alarm: Alarm, canRing: Boolean, onToggle: (Boolean) -> Uni
     }
 }
 
-private fun nextAlarmHeader(context: Context, next: ScheduledAlarm?, hasTarget: Boolean): Pair<String, String?> {
+private fun nextAlarmHeader(
+    context: Context,
+    next: ScheduledAlarm?,
+    now: ZonedDateTime,
+    hasTarget: Boolean,
+): Pair<String, String?> {
     if (!hasTarget) return context.getString(R.string.home_no_alarm) to context.getString(R.string.next_need_target)
     if (next == null) return context.getString(R.string.home_no_alarm) to null
-    val until = Duration.between(ZonedDateTime.now(), next.at)
+    val until = Duration.between(now, next.at)
     val title = context.getString(R.string.home_next_alarm, until.toHours(), until.toMinutesPart())
     val date = next.at.format(DateTimeFormatter.ofPattern(context.getString(R.string.next_date_pattern)))
     return title to context.getString(R.string.home_next_alarm_at, date, formatClockTime(context, next.at.toLocalTime()))
 }
+
+private fun currentMinute(): ZonedDateTime = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES)
 
 fun pickTime(context: Context, initial: LocalTime, onPick: (LocalTime) -> Unit) {
     TimePickerDialog(
