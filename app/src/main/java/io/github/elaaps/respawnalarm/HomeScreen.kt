@@ -62,7 +62,7 @@ import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.launch
 
 @Composable
-fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Unit) {
+fun HomeScreen(onEdit: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
     var alarms by remember { mutableStateOf(store.alarms()) }
@@ -131,10 +131,12 @@ fun HomeScreen(onEdit: (Long) -> Unit, onAdd: (Long) -> Unit, onSettings: () -> 
         snackbarHost = { SnackbarHost(snackbar) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                val alarm = Alarm(id = store.newId(), hour = NEW_ALARM_HOUR, minute = 0)
-                store.put(alarm)
-                refresh()
-                onAdd(alarm.id)
+                pickTime(context, LocalTime.of(NEW_ALARM_HOUR, 0)) { time ->
+                    val alarm = Alarm(id = store.newId(), hour = time.hour, minute = time.minute)
+                    store.put(alarm)
+                    refresh()
+                    onEdit(alarm.id)
+                }
             }) {
                 Icon(painterResource(R.drawable.ic_add), contentDescription = stringResource(R.string.action_add_alarm))
             }

@@ -32,7 +32,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun AlarmEditorScreen(alarmId: Long, pickTimeFirst: Boolean, onBack: () -> Unit) {
+fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
     var alarm by remember { mutableStateOf(store.alarm(alarmId)) }
@@ -47,14 +47,6 @@ fun AlarmEditorScreen(alarmId: Long, pickTimeFirst: Boolean, onBack: () -> Unit)
         alarm = updated
         store.put(updated)
         AlarmScheduler.schedule(context)
-    }
-
-    LaunchedEffect(Unit) {
-        if (pickTimeFirst) {
-            pickTime(context, LocalTime.of(current.hour, current.minute)) {
-                update(current.copy(hour = it.hour, minute = it.minute))
-            }
-        }
     }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {

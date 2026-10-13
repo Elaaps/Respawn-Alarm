@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
 
 private sealed interface Screen {
     data object Home : Screen
-    data class Editor(val alarmId: Long, val pickTimeFirst: Boolean = false) : Screen
+    data class Editor(val alarmId: Long) : Screen
     data object Settings : Screen
     data object Onboarding : Screen
 }
@@ -136,11 +136,10 @@ private fun ScreenContent(current: Screen, onNavigate: (Screen) -> Unit) {
     when (current) {
         Screen.Home -> HomeScreen(
             onEdit = { onNavigate(Screen.Editor(it)) },
-            onAdd = { onNavigate(Screen.Editor(it, pickTimeFirst = true)) },
             onSettings = { onNavigate(Screen.Settings) },
             onSetup = { onNavigate(Screen.Onboarding) },
         )
-        is Screen.Editor -> AlarmEditorScreen(current.alarmId, current.pickTimeFirst, onBack = { onNavigate(Screen.Home) })
+        is Screen.Editor -> AlarmEditorScreen(current.alarmId, onBack = { onNavigate(Screen.Home) })
         Screen.Settings -> SettingsScreen(onBack = { onNavigate(Screen.Home) }, onSetup = { onNavigate(Screen.Onboarding) })
         Screen.Onboarding -> OnboardingScreen(onDone = { onNavigate(Screen.Home) })
     }
