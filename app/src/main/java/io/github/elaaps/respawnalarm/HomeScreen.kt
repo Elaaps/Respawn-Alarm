@@ -155,7 +155,7 @@ fun HomeScreen(onEdit: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Un
             if (missing.isNotEmpty()) {
                 item(key = KEY_BANNER) { MissingPermissionsBanner(missing, onClick = onSetup, Modifier.animateItem()) }
             }
-            items(alarms, key = { it.id }) { alarm ->
+            items(alarms.sortedBy { LocalTime.of(it.hour, it.minute) }, key = { it.id }) { alarm ->
                 SwipeToDelete(onDelete = { delete(alarm) }, modifier = Modifier.animateItem()) {
                     AlarmRow(
                         alarm = alarm,
