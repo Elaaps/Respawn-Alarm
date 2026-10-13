@@ -170,7 +170,7 @@ class SessionService : Service() {
             }
             Mode.ALARM -> {
                 val session = session ?: return
-                val inTarget = foreground == alarm.targetPackage
+                val inTarget = foreground != null && foreground == alarm.targetPackage
                 val phase = session.tick(now, inTarget, watcher.lastTouchAt)
                 countdown?.let { if (inTarget) it.show(overlayText(phase, session.remainingMs)) else it.hide() }
                 when (phase) {

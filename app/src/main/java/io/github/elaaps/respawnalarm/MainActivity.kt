@@ -72,7 +72,9 @@ private const val SCREEN_ONBOARDING = "onboarding"
 private fun App() {
     val context = LocalContext.current
     var screen by rememberSaveable(stateSaver = ScreenSaver) {
-        mutableStateOf(if (AlarmStore(context).onboardingDone) Screen.Home else Screen.Onboarding)
+        val store = AlarmStore(context)
+        val setUp = store.onboardingDone && store.settings().targetPackage != null
+        mutableStateOf(if (setUp) Screen.Home else Screen.Onboarding)
     }
     var backProgress by remember { mutableFloatStateOf(0f) }
     var backFromLeft by remember { mutableStateOf(true) }

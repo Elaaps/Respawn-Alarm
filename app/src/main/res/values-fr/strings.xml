@@ -80,6 +80,7 @@
     <string name="onboarding_next">Suivant</string>
     <string name="onboarding_later">Plus tard</string>
     <string name="onboarding_finish">Terminer</string>
+    <string name="onboarding_target_text">Choisis le jeu auquel il faudra jouer pour arrêter l\'alarme.</string>
     <string name="vendor_title">Les téléphones %1$s peuvent tuer l\'alarme</string>
     <string name="vendor_text">L\'optimisation de la batterie arrête les applis en arrière-plan, alarmes comprises. dontkillmyapp.com explique comment régler ce problème.</string>
     <string name="vendor_open_guide">dontkillmyapp.com</string>

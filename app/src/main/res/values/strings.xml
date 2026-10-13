@@ -79,6 +79,7 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_later">Later</string>
     <string name="onboarding_finish">Finish</string>
+    <string name="onboarding_target_text">Pick the game you will have to play to stop the alarm.</string>
     <string name="vendor_title">%1$s phones can kill the alarm</string>
     <string name="vendor_text">Battery optimization stops apps in the background, alarms included. dontkillmyapp.com explains how to fix it.</string>
     <string name="vendor_open_guide">dontkillmyapp.com</string>

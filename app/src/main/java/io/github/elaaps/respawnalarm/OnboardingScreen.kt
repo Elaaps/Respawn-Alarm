@@ -32,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -46,6 +47,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 
 private sealed interface SetupStep {
     data object Welcome : SetupStep
+    data object Target : SetupStep
     data class Grant(val permission: Permission) : SetupStep
 
     data class Vendor(val maker: String, val guideUrl: String) : SetupStep
@@ -59,14 +61,30 @@ fun OnboardingScreen(onDone: () -> Unit) {
     val missingAtStart = rememberSaveable {
         Permission.entries.filterNot { Permissions.isGranted(context, it) }.map { it.ordinal }.toIntArray()
     }
+    val needsTarget = rememberSaveable { store.settings().targetPackage == null }
     val steps = remember {
-        setupSteps(firstLaunch = !store.onboardingDone, missing = missingAtStart.map { Permission.entries[it] })
+        setupSteps(
+            firstLaunch = !store.onboardingDone,
+            needsTarget = needsTarget,
+            missing = missingAtStart.map { Permission.entries[it] },
+        )
     }
+    val suggestedTarget = remember { store.suggestedTarget() }
     var index by rememberSaveable { mutableIntStateOf(0) }
 
     fun finish() {
+        val targetStep = steps.indexOf(SetupStep.Target)
+        if (targetStep >= 0 && store.settings().targetPackage == null) {
+            index = targetStep
+            return
+        }
         store.onboardingDone = true
         onDone()
+    }
+
+    fun chooseTarget(target: String) {
+        store.saveSettings(store.settings().copy(targetPackage = target))
+        AlarmScheduler.schedule(context)
     }
 
     val shown = index.coerceAtMost(steps.lastIndex)
@@ -102,14 +120,21 @@ fun OnboardingScreen(onDone: () -> Unit) {
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    when (val pageStep = steps[page]) {
+                    val pageStep = steps[page]
+                    when (pageStep) {
                         SetupStep.Welcome -> WelcomePage(onStart = { advanceFrom(page) })
+                        SetupStep.Target -> TargetPage(suggestedTarget) { target ->
+                            chooseTarget(target)
+                            advanceFrom(page)
+                        }
                         is SetupStep.Grant -> GrantPage(pageStep.permission, onNext = { advanceFrom(page) })
                         is SetupStep.Vendor -> VendorPage(pageStep, onNext = { advanceFrom(page) })
                         SetupStep.Diagnostic -> DiagnosticPage(onFinish = ::finish)
                     }
-                    TextButton(onClick = ::finish, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.onboarding_later))
+                    if (pageStep != SetupStep.Target) {
+                        TextButton(onClick = ::finish, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.onboarding_later))
+                        }
                     }
                 }
             }
@@ -117,8 +142,9 @@ fun OnboardingScreen(onDone: () -> Unit) {
     }
 }
 
-private fun setupSteps(firstLaunch: Boolean, missing: List<Permission>): List<SetupStep> = buildList {
+private fun setupSteps(firstLaunch: Boolean, needsTarget: Boolean, missing: List<Permission>): List<SetupStep> = buildList {
     if (firstLaunch) add(SetupStep.Welcome)
+    if (needsTarget) add(SetupStep.Target)
     missing.forEach { add(SetupStep.Grant(it)) }
     backgroundGuideUrl(Build.MANUFACTURER)?.let { url ->
         add(SetupStep.Vendor(Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, url))
@@ -134,6 +160,19 @@ private fun WelcomePage(onStart: () -> Unit) {
     PageTitle(stringResource(R.string.onboarding_welcome_title))
     Text(stringResource(R.string.onboarding_welcome_text))
     Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.onboarding_start)) }
+}
+
+@Composable
+private fun TargetPage(suggested: String?, onChoose: (String) -> Unit) {
+    var target by rememberSaveable { mutableStateOf(suggested) }
+    PageTitle(stringResource(R.string.target_app))
+    Text(stringResource(R.string.onboarding_target_text))
+    TargetAppRow(target, defaultPackage = null, overridable = false) { target = it }
+    Button(
+        onClick = { target?.let(onChoose) },
+        enabled = target != null,
+        modifier = Modifier.fillMaxWidth(),
+    ) { Text(stringResource(R.string.onboarding_next)) }
 }
 
 @Composable

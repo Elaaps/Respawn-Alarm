@@ -37,10 +37,7 @@ class AlarmStore(context: Context) {
 
     fun newId(): Long = (alarms().maxOfOrNull { it.id } ?: (FIRST_ALARM_ID - 1)) + 1
 
-    fun settings(): GlobalSettings {
-        val settings = prefs.getString(KEY_SETTINGS, null)?.let(::decodeSettings) ?: GlobalSettings()
-        return if (settings.targetPackage == null) settings.copy(targetPackage = defaultTarget()) else settings
-    }
+    fun settings(): GlobalSettings = prefs.getString(KEY_SETTINGS, null)?.let(::decodeSettings) ?: GlobalSettings()
 
     fun saveSettings(settings: GlobalSettings) = prefs.edit { putString(KEY_SETTINGS, encodeSettings(settings)) }
 
@@ -75,7 +72,7 @@ class AlarmStore(context: Context) {
         remove(KEY_OVERLAY_Y)
     }
 
-    private fun defaultTarget(): String? = DEFAULT_TARGETS.firstOrNull { isInstalled(it) }
+    fun suggestedTarget(): String? = DEFAULT_TARGETS.firstOrNull { isInstalled(it) }
 
     private fun isInstalled(packageName: String): Boolean = try {
         appContext.packageManager.getApplicationInfo(packageName, 0)
