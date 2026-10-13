@@ -55,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -159,6 +160,7 @@ fun HomeScreen(onEdit: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Un
                     AlarmRow(
                         alarm = alarm,
                         canRing = settings.resolve(alarm).targetPackage != null,
+                        skippedDate = pendingSkip(alarm, now),
                         onClick = { onEdit(alarm.id) },
                         onDelete = { delete(alarm) },
                         onToggle = { enabled ->
@@ -243,6 +245,7 @@ private fun SwipeToDelete(onDelete: () -> Unit, modifier: Modifier = Modifier, c
 private fun AlarmRow(
     alarm: Alarm,
     canRing: Boolean,
+    skippedDate: LocalDate?,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     onToggle: (Boolean) -> Unit,
@@ -253,6 +256,7 @@ private fun AlarmRow(
         AlarmCard(
             alarm,
             canRing,
+            skippedDate,
             onToggle,
             Modifier.combinedClickable(
                 onClick = onClick,
@@ -274,7 +278,13 @@ private fun AlarmRow(
 }
 
 @Composable
-private fun AlarmCard(alarm: Alarm, canRing: Boolean, onToggle: (Boolean) -> Unit, modifier: Modifier) {
+private fun AlarmCard(
+    alarm: Alarm,
+    canRing: Boolean,
+    skippedDate: LocalDate?,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier,
+) {
     val context = LocalContext.current
     Card(Modifier.fillMaxWidth().clip(CardDefaults.shape).then(modifier)) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -286,7 +296,7 @@ private fun AlarmCard(alarm: Alarm, canRing: Boolean, onToggle: (Boolean) -> Uni
                 )
                 val details = listOf(alarm.label, daysSummary(context, alarm.days)).filter { it.isNotBlank() }
                 Text(details.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                alarm.skippedDate?.let { date ->
+                skippedDate?.let { date ->
                     val pattern = DateTimeFormatter.ofPattern(stringResource(R.string.short_date_pattern))
                     Text(
                         stringResource(R.string.alarm_skipped, date.format(pattern)),

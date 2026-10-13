@@ -12,6 +12,9 @@ fun nextRing(alarm: Alarm, now: ZonedDateTime): ZonedDateTime? {
     return if (next.toLocalDate() == alarm.skippedDate) nextTrigger(next, alarm.hour, alarm.minute, alarm.days) else next
 }
 
+fun pendingSkip(alarm: Alarm, now: ZonedDateTime): LocalDate? =
+    alarm.skippedDate?.takeIf { it == nextRing(alarm.copy(skippedDate = null), now)?.toLocalDate() }
+
 fun nextAlarm(alarms: List<Alarm>, now: ZonedDateTime): ScheduledAlarm? = alarms
     .mapNotNull { alarm -> nextRing(alarm, now)?.let { ScheduledAlarm(alarm, it) } }
     .minWithOrNull(compareBy<ScheduledAlarm> { it.at }.thenBy { it.alarm.id })

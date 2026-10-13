@@ -76,6 +76,36 @@ class NextAlarmTest {
     }
 
     @Test
+    fun `pendingSkip, before the skipped ring, gives its date`() {
+        val alarm = Alarm(
+            id = 1,
+            hour = 7,
+            minute = 0,
+            days = setOf(DayOfWeek.FRIDAY),
+            skippedDate = LocalDate.of(2026, 10, 9),
+        )
+
+        val skipped = pendingSkip(alarm, now)
+
+        assertEquals(LocalDate.of(2026, 10, 9), skipped)
+    }
+
+    @Test
+    fun `pendingSkip, once the skipped ring has passed, gives nothing`() {
+        val alarm = Alarm(
+            id = 1,
+            hour = 7,
+            minute = 0,
+            days = setOf(DayOfWeek.FRIDAY),
+            skippedDate = LocalDate.of(2026, 10, 9),
+        )
+
+        val skipped = pendingSkip(alarm, now = at(day = 9, hour = 8))
+
+        assertNull(skipped)
+    }
+
+    @Test
     fun `afterRing, of a one-shot alarm, turns it off`() {
         val alarms = listOf(Alarm(id = 1, hour = 7, minute = 0))
 

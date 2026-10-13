@@ -127,13 +127,15 @@ private fun OverridesCard(alarm: Alarm, settings: GlobalSettings, onChange: (Ala
 
 @Composable
 private fun SkipNextRow(alarm: Alarm, onChange: (Alarm) -> Unit) {
+    val now = ZonedDateTime.now()
     val unskipped = alarm.copy(skippedDate = null)
-    val nextDate = nextRing(unskipped, ZonedDateTime.now())?.toLocalDate() ?: return
+    val nextDate = nextRing(unskipped, now)?.toLocalDate() ?: return
+    val skippedDate = pendingSkip(alarm, now)
     val pattern = DateTimeFormatter.ofPattern(stringResource(R.string.short_date_pattern))
     SwitchRow(
         stringResource(R.string.skip_next),
-        checked = alarm.skippedDate != null,
+        checked = skippedDate != null,
         onChange = { onChange(if (it) alarm.copy(skippedDate = nextDate) else unskipped) },
-        description = (alarm.skippedDate ?: nextDate).format(pattern),
+        description = (skippedDate ?: nextDate).format(pattern),
     )
 }
