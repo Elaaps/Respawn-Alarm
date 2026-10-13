@@ -14,7 +14,7 @@ class ForegroundAppDetector(context: Context) {
 
     fun poll(): String? {
         val now = System.currentTimeMillis()
-        val events = usageStats.queryEvents(queriedUntil - OVERLAP_MS, now)
+        val events = usageStats.queryEvents(queriedUntil - OVERLAP_MS, now) ?: return foregroundPackage
         val event = UsageEvents.Event()
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
