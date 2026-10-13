@@ -35,7 +35,12 @@ class AlarmStore(context: Context) {
 
     fun deleteAll() = saveAlarms(emptyList())
 
-    fun newId(): Long = (alarms().maxOfOrNull { it.id } ?: (FIRST_ALARM_ID - 1)) + 1
+    fun newId(): Long {
+        val afterLast = (alarms().maxOfOrNull { it.id } ?: (FIRST_ALARM_ID - 1)) + 1
+        val id = maxOf(prefs.getLong(KEY_NEXT_ALARM_ID, FIRST_ALARM_ID), afterLast)
+        prefs.edit { putLong(KEY_NEXT_ALARM_ID, id + 1) }
+        return id
+    }
 
     fun settings(): GlobalSettings = prefs.getString(KEY_SETTINGS, null)?.let(::decodeSettings) ?: GlobalSettings()
 
@@ -85,6 +90,7 @@ class AlarmStore(context: Context) {
         val DEFAULT_TARGETS = listOf("com.geode.launcher", "com.robtopx.geometryjump")
 
         const val KEY_ALARMS = "alarms"
+        const val KEY_NEXT_ALARM_ID = "next_alarm_id"
         const val KEY_SETTINGS = "global_settings"
         const val KEY_ONBOARDING_DONE = "onboarding_done"
         const val KEY_RINGING_ALARM = "ringing_alarm_id"
