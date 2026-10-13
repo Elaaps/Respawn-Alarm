@@ -56,7 +56,12 @@ private sealed interface SetupStep {
 fun OnboardingScreen(onDone: () -> Unit) {
     val context = LocalContext.current
     val store = remember { AlarmStore(context) }
-    val steps = remember { setupSteps(context, firstLaunch = !store.onboardingDone) }
+    val missingAtStart = rememberSaveable {
+        Permission.entries.filterNot { Permissions.isGranted(context, it) }.map { it.ordinal }.toIntArray()
+    }
+    val steps = remember {
+        setupSteps(firstLaunch = !store.onboardingDone, missing = missingAtStart.map { Permission.entries[it] })
+    }
     var index by rememberSaveable { mutableIntStateOf(0) }
 
     fun finish() {
@@ -112,9 +117,9 @@ fun OnboardingScreen(onDone: () -> Unit) {
     }
 }
 
-private fun setupSteps(context: Context, firstLaunch: Boolean): List<SetupStep> = buildList {
+private fun setupSteps(firstLaunch: Boolean, missing: List<Permission>): List<SetupStep> = buildList {
     if (firstLaunch) add(SetupStep.Welcome)
-    Permission.entries.filterNot { Permissions.isGranted(context, it) }.forEach { add(SetupStep.Grant(it)) }
+    missing.forEach { add(SetupStep.Grant(it)) }
     backgroundGuideUrl(Build.MANUFACTURER)?.let { url ->
         add(SetupStep.Vendor(Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, url))
     }
