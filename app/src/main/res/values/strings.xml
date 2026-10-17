@@ -42,7 +42,24 @@
     <string name="perm_exact_alarm_title">Alarms &amp; reminders</string>
     <string name="perm_exact_alarm_desc">To ring right on time.</string>
 
-    <string name="ringing_message">Play %1$s of %2$s to stop the alarm.</string>
+    <string name="ringing_message">Play %1$s of %2$s to beat it.</string>
+    <string name="ringing_boss_label">Boss · %1$s alarm</string>
+    <string name="hp_label">HP</string>
+    <string name="hp_value" translatable="false">%1$d / %2$d</string>
+    <string name="overlay_boss" translatable="false">BOSS</string>
+    <string name="overlay_tap_to_see">Tap to see</string>
+    <string name="victory_ko" translatable="false">K.O.</string>
+    <string name="victory_title">Alarm defeated</string>
+    <string name="victory_up_at">Up at</string>
+    <string name="victory_attempts">Attempts</string>
+    <string name="victory_snoozes">Snoozes</string>
+    <string name="victory_streak">Streak</string>
+    <plurals name="streak_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="action_continue">Continue</string>
+    <string name="action_view">View</string>
     <string name="action_emergency">Emergency stop</string>
     <string name="emergency_title">Stop the alarm without playing?</string>
     <string name="emergency_subtitle">Use your screen lock</string>
@@ -162,6 +179,9 @@
 
     <string name="section_overlay">In-game overlay</string>
     <string name="overlay_enabled">Show</string>
+    <string name="overlay_style">Style</string>
+    <string name="overlay_style_health_bar">Health bar</string>
+    <string name="overlay_style_timer">Time left</string>
     <string name="overlay_reset">Reset position</string>
 
     <string name="channel_upcoming">Upcoming alarms</string>

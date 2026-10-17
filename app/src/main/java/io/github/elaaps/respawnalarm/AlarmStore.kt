@@ -58,6 +58,10 @@ class AlarmStore(context: Context) {
             if (value == null) remove(KEY_RINGING_ALARM) else putLong(KEY_RINGING_ALARM, value)
         }
 
+    var alarmInProgress: Boolean
+        get() = prefs.getBoolean(KEY_ALARM_IN_PROGRESS, false)
+        set(value) = prefs.edit { putBoolean(KEY_ALARM_IN_PROGRESS, value) }
+
     var onboardingDone: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDING_DONE, false)
         set(value) = prefs.edit { putBoolean(KEY_ONBOARDING_DONE, value) }
@@ -94,6 +98,7 @@ class AlarmStore(context: Context) {
         const val KEY_SETTINGS = "global_settings"
         const val KEY_ONBOARDING_DONE = "onboarding_done"
         const val KEY_RINGING_ALARM = "ringing_alarm_id"
+        const val KEY_ALARM_IN_PROGRESS = "alarm_in_progress"
         const val KEY_OVERLAY_X = "overlay_x"
         const val KEY_OVERLAY_Y = "overlay_y"
     }

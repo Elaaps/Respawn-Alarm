@@ -55,6 +55,13 @@
             android:taskAffinity=""
             android:turnScreenOn="true" />
 
+        <activity
+            android:name=".VictoryActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:taskAffinity="" />
+
         <service
             android:name=".SessionService"
             android:directBootAware="true"

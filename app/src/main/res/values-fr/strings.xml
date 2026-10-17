@@ -42,7 +42,22 @@
     <string name="perm_exact_alarm_title">Alarmes et rappels</string>
     <string name="perm_exact_alarm_desc">Pour sonner à l\'heure pile.</string>
 
-    <string name="ringing_message">Joue %1$s à %2$s pour arrêter l\'alarme.</string>
+    <string name="ringing_message">Joue %1$s à %2$s pour le vaincre.</string>
+    <string name="ringing_boss_label">Boss · réveil de %1$s</string>
+    <string name="hp_label">PV</string>
+    <string name="overlay_tap_to_see">Touche pour voir</string>
+    <string name="victory_title">Réveil vaincu</string>
+    <string name="victory_up_at">Debout à</string>
+    <string name="victory_attempts">Tentatives</string>
+    <string name="victory_snoozes">Snoozes</string>
+    <string name="victory_streak">Série</string>
+    <plurals name="streak_days">
+        <item quantity="one">%d jour</item>
+        <item quantity="many">%d jours</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
+    <string name="action_continue">Continuer</string>
+    <string name="action_view">Voir</string>
     <string name="action_emergency">Arrêt d\'urgence</string>
     <string name="emergency_title">Arrêter l\'alarme sans jouer ?</string>
     <string name="emergency_subtitle">Utilise le verrouillage de l\'écran</string>
@@ -163,6 +178,9 @@
 
     <string name="section_overlay">Overlay en jeu</string>
     <string name="overlay_enabled">Afficher</string>
+    <string name="overlay_style">Style</string>
+    <string name="overlay_style_health_bar">Barre de vie</string>
+    <string name="overlay_style_timer">Temps restant</string>
     <string name="overlay_reset">Réinitialiser la position</string>
 
     <string name="channel_upcoming">Alarmes à venir</string>

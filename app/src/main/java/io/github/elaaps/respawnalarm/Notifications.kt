@@ -6,6 +6,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
+import android.os.Build
+import androidx.compose.ui.graphics.toArgb
 import java.time.LocalTime
 
 class Notifications(private val context: Context) {
@@ -49,11 +52,25 @@ class Notifications(private val context: Context) {
         .setContentText(context.getString(R.string.notif_snoozed_text, formatClockTime(context, until), appLabel(context, target)))
         .build()
 
-    fun playing(target: String?, remainingMs: Long, durationMs: Long, inactivitySec: Int): Notification = alarmBuilder(target)
-        .setContentTitle(context.getString(R.string.notif_playing_title, formatDuration(remainingMs)))
-        .setContentText(context.getString(R.string.notif_playing_text, appLabel(context, target), inactivitySec))
-        .setProgress(durationMs.toInt(), (durationMs - remainingMs).toInt(), false)
-        .build()
+    fun playing(target: String?, remainingMs: Long, durationMs: Long, inactivitySec: Int): Notification {
+        val builder = alarmBuilder(target)
+            .setContentTitle(context.getString(R.string.notif_playing_title, formatDuration(remainingMs)))
+            .setContentText(context.getString(R.string.notif_playing_text, appLabel(context, target), inactivitySec))
+        val playedMs = (durationMs - remainingMs).toInt()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val segmentMs = durationMs.toInt() / HP_SEGMENTS
+            val segments = List(HP_SEGMENTS) { Notification.ProgressStyle.Segment(segmentMs).setColor(BossColors.Hp.toArgb()) }
+            builder.setStyle(
+                Notification.ProgressStyle()
+                    .setProgressSegments(segments)
+                    .setProgress(playedMs)
+                    .setProgressTrackerIcon(Icon.createWithResource(context, R.drawable.ic_sports_esports)),
+            )
+        } else {
+            builder.setProgress(durationMs.toInt(), playedMs, false)
+        }
+        return builder.build()
+    }
 
     fun diagnostic(foreground: String?, touchCount: Int?, remainingMs: Long): Notification {
         val stop = PendingIntent.getService(
@@ -95,15 +112,33 @@ class Notifications(private val context: Context) {
         manager.notify(ID_SESSION, notification)
     }
 
-    fun done(durationMs: Long) {
-        val notification = Notification.Builder(context, CHANNEL_INFO)
-            .setSmallIcon(R.drawable.ic_stat_alarm)
-            .setContentTitle(context.getString(R.string.notif_done_title))
-            .setContentText(context.getString(R.string.notif_done_text, formatDuration(durationMs)))
+    fun won(victory: Victory): Notification = doneBuilder(victory)
+        .setOngoing(true)
+        .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+        .build()
+
+    fun done(victory: Victory) {
+        val notification = doneBuilder(victory)
             .setAutoCancel(true)
             .setTimeoutAfter(DONE_TIMEOUT_MS)
             .build()
         manager.notify(ID_DONE, notification)
+    }
+
+    private fun doneBuilder(victory: Victory): Notification.Builder {
+        val view = PendingIntent.getActivity(
+            context,
+            REQUEST_VICTORY,
+            VictoryActivity.intent(context, victory),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return Notification.Builder(context, CHANNEL_INFO)
+            .setSmallIcon(R.drawable.ic_stat_alarm)
+            .setContentTitle(context.getString(R.string.notif_done_title))
+            .setContentText(context.getString(R.string.notif_done_text, formatDuration(victory.durationSec * MILLIS_PER_SECOND)))
+            .setOnlyAlertOnce(true)
+            .setContentIntent(view)
+            .addAction(Notification.Action.Builder(null, context.getString(R.string.action_view), view).build())
     }
 
     fun emergencyStopped() {
@@ -144,6 +179,8 @@ class Notifications(private val context: Context) {
     }
 
     fun cancelUpcoming() = manager.cancel(ID_UPCOMING)
+
+    fun cancelDone() = manager.cancel(ID_DONE)
 
     fun update(notification: Notification) = manager.notify(ID_SESSION, notification)
 
@@ -201,6 +238,8 @@ class Notifications(private val context: Context) {
         private const val REQUEST_LAUNCH = 2
         private const val REQUEST_RESTART = 3
         private const val REQUEST_SNOOZE = 4
+        private const val REQUEST_VICTORY = 6
         private const val DONE_TIMEOUT_MS = 30 * 60 * 1000L
+        private const val MILLIS_PER_SECOND = 1_000L
     }
 }

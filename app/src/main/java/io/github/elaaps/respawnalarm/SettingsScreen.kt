@@ -167,6 +167,19 @@ private fun OverlayGroup(settings: GlobalSettings, onChange: (GlobalSettings) ->
             )
         }
         row { shapes ->
+            ChoiceRow(
+                stringResource(R.string.overlay_style),
+                listOf(
+                    Choice(OverlayStyle.HEALTH_BAR, stringResource(R.string.overlay_style_health_bar)),
+                    Choice(OverlayStyle.TIMER, stringResource(R.string.overlay_style_timer)),
+                ),
+                settings.overlayStyle,
+                shapes,
+                RowIcon(R.drawable.ic_palette, IconStyle.OTHER),
+                enabled = settings.overlayEnabled,
+            ) { onChange(settings.copy(overlayStyle = it)) }
+        }
+        row { shapes ->
             ValueRow(
                 stringResource(R.string.overlay_reset),
                 value = null,

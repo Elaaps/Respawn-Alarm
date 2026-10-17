@@ -40,15 +40,16 @@ class SessionService : Service() {
     private var lastNotifiedAt = 0L
     private var lastPhase: Session.Phase? = null
     private var everPlayed = false
+    private var victory: Victory? = null
+    private var wonAt = 0L
+    private var awayTicks = 0
 
     private val tick = object : Runnable {
         override fun run() {
             onTick()
-            if (mode != null && !completing) handler.postDelayed(this, TICK_MS)
+            if (mode != null) handler.postDelayed(this, TICK_MS)
         }
     }
-
-    private val finishLater = Runnable { finish() }
 
     override fun onBind(intent: Intent?) = null
 
@@ -80,6 +81,11 @@ class SessionService : Service() {
             }
             return START_NOT_STICKY
         }
+        if (intent?.action == ACTION_VICTORY_SHOWN) {
+            notifications.cancelDone()
+            if (completing) finish() else if (mode == null) stopSelf(startId)
+            return START_NOT_STICKY
+        }
         if (intent?.action == ACTION_SNOOZE) {
             when (mode) {
                 Mode.ALARM -> snooze()
@@ -87,6 +93,10 @@ class SessionService : Service() {
                 Mode.DIAGNOSTIC -> Unit
             }
             return if (mode == Mode.ALARM) START_STICKY else START_NOT_STICKY
+        }
+        if (intent == null && mode == null && !AlarmStore(this).alarmInProgress) {
+            stopSelf(startId)
+            return START_NOT_STICKY
         }
         val requested = intent?.getStringExtra(EXTRA_MODE)?.let { Mode.valueOf(it) } ?: Mode.ALARM
         val alarmId = if (intent == null) {
@@ -115,7 +125,10 @@ class SessionService : Service() {
         mode = newMode
         val store = AlarmStore(this)
         alarm = store.resolve(alarmId)
-        if (newMode == Mode.ALARM) store.ringingAlarmId = alarmId
+        if (newMode == Mode.ALARM) {
+            store.ringingAlarmId = alarmId
+            store.alarmInProgress = true
+        }
         startedAt = SystemClock.elapsedRealtime()
         ringingSince = Instant.now()
         lastPhase = null
@@ -147,7 +160,8 @@ class SessionService : Service() {
         detector = ForegroundAppDetector(this)
         touchWatcher = TouchWatcher(this).also { overlayOk = it.start() }
         if (newMode == Mode.ALARM) {
-            if (store.settings().overlayEnabled) countdown = CountdownOverlay(this, store)
+            val settings = store.settings()
+            if (settings.overlayEnabled) countdown = CountdownOverlay(this, store, settings.overlayStyle, onKnockedOutTap = ::showVictory)
             sound = AlarmSound(this, alarm).also { it.play() }
             showRingingScreen()
         }
@@ -171,10 +185,11 @@ class SessionService : Service() {
                 }
             }
             Mode.ALARM -> {
+                if (completing) return watchVictory(now, foreground)
                 val session = session ?: return
                 val inTarget = foreground != null && foreground == alarm.targetPackage
                 val phase = session.tick(now, inTarget, watcher.lastTouchAt)
-                countdown?.let { if (inTarget) it.show(overlayText(phase, session.remainingMs)) else it.hide() }
+                countdown?.let { if (inTarget) it.show(overlayState(phase, session.remainingMs, alarm.durationMs)) else it.hide() }
                 when (phase) {
                     Session.Phase.RINGING -> sound?.play()
                     Session.Phase.LOADING, Session.Phase.PLAYING, Session.Phase.SNOOZED -> sound?.pause()
@@ -196,12 +211,45 @@ class SessionService : Service() {
 
     private fun complete() {
         completing = true
-        handler.removeCallbacks(tick)
         sound?.release()
         sound = null
-        notifications.done(alarm.durationMs)
         record(emergencyStop = false)
-        if (countdown?.isShown == true) handler.postDelayed(finishLater, DONE_OVERLAY_MS) else finish()
+        AlarmStore(this).apply {
+            ringingAlarmId = null
+            alarmInProgress = false
+        }
+        val won = Victory(
+            upAt = Instant.now(),
+            durationSec = alarm.durationSec,
+            resets = session?.resets ?: 0,
+            snoozes = alarm.snooze.allowedCount - (session?.snoozesLeft ?: 0),
+        )
+        victory = won
+        wonAt = SystemClock.elapsedRealtime()
+        notifications.update(notifications.won(won))
+        countdown?.let { if (it.isShown) it.show(OverlayState.KnockedOut) }
+    }
+
+    // After the win, the game is left alone: the victory screen waits until the player leaves it.
+    // Closing the game can leave no app reported in the foreground, so that counts as away too.
+    private fun watchVictory(now: Long, foreground: String?) {
+        val won = victory ?: return finish()
+        awayTicks = if (foreground == alarm.targetPackage) 0 else awayTicks + 1
+        when {
+            awayTicks >= AWAY_TICKS_BEFORE_VICTORY -> showVictory()
+            now - wonAt >= VICTORY_WATCH_MS -> {
+                finish()
+                notifications.done(won)
+            }
+        }
+    }
+
+    private fun showVictory() {
+        val won = victory ?: return
+        notifications.done(won)
+        val intent = VictoryActivity.intent(this, won).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        ignoring<ActivityNotFoundException> { startActivity(intent) }
+        finish()
     }
 
     private fun record(emergencyStop: Boolean) {
@@ -276,7 +324,12 @@ class SessionService : Service() {
     }
 
     private fun finish() {
-        if (mode == Mode.ALARM) AlarmStore(this).ringingAlarmId = null
+        if (mode == Mode.ALARM) {
+            AlarmStore(this).apply {
+                ringingAlarmId = null
+                alarmInProgress = false
+            }
+        }
         teardown()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -284,8 +337,9 @@ class SessionService : Service() {
 
     private fun teardown() {
         handler.removeCallbacks(tick)
-        handler.removeCallbacks(finishLater)
         completing = false
+        victory = null
+        awayTicks = 0
         countdown?.hide()
         countdown = null
         sound?.release()
@@ -305,8 +359,10 @@ class SessionService : Service() {
         const val ACTION_STOP_DIAGNOSTIC = "io.github.elaaps.respawnalarm.STOP_DIAGNOSTIC"
         const val ACTION_SNOOZE = "io.github.elaaps.respawnalarm.SNOOZE"
         const val ACTION_EMERGENCY_STOP = "io.github.elaaps.respawnalarm.EMERGENCY_STOP"
+        const val ACTION_VICTORY_SHOWN = "io.github.elaaps.respawnalarm.VICTORY_SHOWN"
         private const val NANOS_PER_MILLI = 1_000_000L
-        private const val DONE_OVERLAY_MS = 3_000L
+        private const val VICTORY_WATCH_MS = 30 * 60 * 1000L
+        private const val AWAY_TICKS_BEFORE_VICTORY = 3
         private const val EXTRA_MODE = "mode"
         private const val EXTRA_ALARM_ID = "alarm_id"
         private const val NO_ALARM = -1L

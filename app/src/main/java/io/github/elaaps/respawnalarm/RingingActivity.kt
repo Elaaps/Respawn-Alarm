@@ -13,17 +13,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,14 +30,14 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.time.LocalTime
 import kotlin.time.Duration.Companion.seconds
@@ -59,6 +55,7 @@ class RingingActivity : ComponentActivity() {
         var restarting = intent.getBooleanExtra(EXTRA_RESTART_ALARM, false) &&
             SessionService.state.value == null
         if (restarting) SessionService.start(this, SessionService.Mode.ALARM, ringingAlarmId)
+        val rangAt = formatClockTime(this, LocalTime.now())
         setContent {
             AppTheme {
                 val state by SessionService.state.collectAsStateWithLifecycle()
@@ -71,8 +68,9 @@ class RingingActivity : ComponentActivity() {
                 }
                 RingingScreen(
                     label = alarm.label,
+                    rangAt = rangAt,
                     target = appLabel(this, alarm.targetPackage),
-                    duration = formatDuration(alarm.durationMs),
+                    durationSec = alarm.durationSec,
                     snoozesLeft = state?.snoozesLeft ?: 0,
                     onLaunch = { launchTarget(alarm.targetPackage) },
                     onSnooze = ::snooze,
@@ -151,8 +149,9 @@ class RingingActivity : ComponentActivity() {
 @Composable
 private fun RingingScreen(
     label: String,
+    rangAt: String,
     target: String,
-    duration: String,
+    durationSec: Int,
     snoozesLeft: Int,
     onLaunch: () -> Unit,
     onSnooze: () -> Unit,
@@ -164,51 +163,46 @@ private fun RingingScreen(
             value = LocalTime.now()
         }
     }
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Box(Modifier.safeDrawingPadding()) {
-            val emergencyDescription = stringResource(R.string.action_emergency)
-            IconButton(
-                onClick = onEmergency,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .semantics { contentDescription = emergencyDescription },
-            ) { Text(EMERGENCY_ICON) }
+    BossBackground {
+        Box(Modifier.fillMaxSize().safeDrawingPadding()) {
+            IconButton(onClick = onEmergency, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                Icon(painterResource(R.drawable.ic_support), contentDescription = stringResource(R.string.action_emergency), tint = BossColors.Lilac)
+            }
             Column(
-                modifier = Modifier.align(Alignment.Center).padding(32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 28.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(formatClockTime(LocalContext.current, now), style = MaterialTheme.typography.displayLarge)
-                if (label.isNotBlank()) Text(label, style = MaterialTheme.typography.headlineSmall)
+                PixelText(stringResource(R.string.ringing_boss_label, rangAt), 19.sp, BossColors.Gold, Modifier.align(Alignment.Start))
+                HpBar(filled = HP_SEGMENTS, blinkLast = true)
+                HpCaption(durationSec, durationSec)
+                ShadowedPixelText(
+                    formatClockTime(LocalContext.current, now),
+                    CLOCK_SIZE,
+                    BossColors.Pale,
+                    BossColors.Purple,
+                    BossColors.Ink,
+                    Modifier.padding(top = 24.dp),
+                )
+                if (label.isNotBlank()) Text(label, style = bossBody(), color = BossColors.Lilac)
                 Text(
-                    stringResource(R.string.ringing_message, duration, target),
-                    style = MaterialTheme.typography.titleMedium,
+                    stringResource(R.string.ringing_message, formatDuration(durationSec * MILLIS_PER_SECOND), target),
+                    style = bossBody(),
+                    color = BossColors.Lilac,
                     textAlign = TextAlign.Center,
                 )
-                Button(
-                    onClick = onLaunch,
-                    modifier = Modifier.fillMaxWidth().height(LAUNCH_HEIGHT),
-                    colors = ButtonDefaults.buttonColors(containerColor = STOP_RED, contentColor = Color.White),
-                ) { Text(stringResource(R.string.action_launch, target), style = MaterialTheme.typography.titleLarge) }
+                Spacer(Modifier.weight(1f))
+                PixelButton(stringResource(R.string.action_launch, target), onLaunch)
                 AnimatedVisibility(visible = snoozesLeft > 0) {
-                    Button(
-                        onClick = onSnooze,
-                        modifier = Modifier.fillMaxWidth(SNOOZE_WIDTH_FRACTION).height(SNOOZE_HEIGHT),
-                        colors = ButtonDefaults.buttonColors(containerColor = SNOOZE_GREEN, contentColor = Color.White),
-                    ) { Text(pluralStringResource(R.plurals.action_snooze, snoozesLeft, snoozesLeft)) }
+                    PixelGhostButton(pluralStringResource(R.plurals.action_snooze, snoozesLeft, snoozesLeft), onSnooze, Modifier.padding(top = 6.dp))
                 }
             }
         }
     }
 }
 
+private fun bossBody() = TextStyle(fontFamily = BossFont, fontSize = 22.sp, lineHeight = 26.sp)
+
 private val CLOCK_REFRESH = 1.seconds
-
-private const val EMERGENCY_ICON = "🛟"
-
-private val STOP_RED = Color(0xFFC62828)
-private val SNOOZE_GREEN = Color(0xFF2E7D32)
-private val LAUNCH_HEIGHT = 80.dp
-private val SNOOZE_HEIGHT = 56.dp
-private const val SNOOZE_WIDTH_FRACTION = 0.7f
+private val CLOCK_SIZE = 104.sp
+private const val MILLIS_PER_SECOND = 1_000L

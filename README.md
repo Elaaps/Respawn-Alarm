@@ -38,3 +38,5 @@ echo "sdk.dir=$HOME/Android/Sdk" > local.properties
 ## License
 
 [GPL-3.0](LICENSE)
+
+The [Jersey 10](https://github.com/scfried/soft-type-jersey) font is under the [SIL Open Font License 1.1](app/src/main/assets/licenses/OFL-Jersey10.txt).

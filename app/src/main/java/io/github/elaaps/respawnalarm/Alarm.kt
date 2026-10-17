@@ -12,6 +12,12 @@ enum class VolumeMode {
     MAX,
 }
 
+enum class OverlayStyle {
+    HEALTH_BAR,
+
+    TIMER,
+}
+
 sealed interface Tone {
     data object SystemDefault : Tone
 
@@ -80,6 +86,7 @@ data class GlobalSettings(
     val loadingGraceEnabled: Boolean = false,
     val loadingGraceSec: Int = DEFAULT_LOADING_GRACE_SEC,
     val overlayEnabled: Boolean = true,
+    val overlayStyle: OverlayStyle = OverlayStyle.HEALTH_BAR,
     val upcomingNoticeHours: Int? = DEFAULT_UPCOMING_NOTICE_HOURS,
 ) {
     init {
