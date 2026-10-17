@@ -4,6 +4,12 @@
 
 An alarm clock you can only stop by playing. When it rings, you have to actively play a game of your choice for a set time, without a break. If you don't the alarm goes back on. It was made to wake up with a few minutes of Geometry Dash, but it works with any app.
 
+<p align="center">
+  <a href="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" alt="Home screen with the time left before the next alarm" height="260"></a>
+  <a href="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" alt="Ringing alarm shown as a boss with a health bar" height="260"></a>
+  <a href="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Health bar overlay over Geometry Dash" height="260"></a>
+</p>
+
 ## How it works
 
 - Set the alarm.
