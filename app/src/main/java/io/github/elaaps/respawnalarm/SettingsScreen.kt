@@ -95,7 +95,6 @@ private fun SessionCard(settings: GlobalSettings, onChange: (GlobalSettings) -> 
         TargetAppRow(settings.targetPackage, defaultPackage = null, overridable = false) {
             onChange(settings.copy(targetPackage = it))
         }
-        SnoozeRow(settings.snooze, defaultSnooze = null) { snooze -> snooze?.let { onChange(settings.copy(snooze = it)) } }
     }
 }
 
@@ -117,7 +116,6 @@ private fun OverlayCard(settings: GlobalSettings, onChange: (GlobalSettings) -> 
 private fun SoundCard(settings: GlobalSettings, onChange: (GlobalSettings) -> Unit) {
     SectionCard(stringResource(R.string.section_sound)) {
         ToneRow(settings.tone, defaultTone = null) { tone -> tone?.let { onChange(settings.copy(tone = it)) } }
-        SwitchRow(stringResource(R.string.vibrate), settings.vibrate, { onChange(settings.copy(vibrate = it)) })
         ChoiceRow(
             stringResource(R.string.volume),
             VolumeMode.entries.map { Choice(it, volumeLabel(it)) },
@@ -129,6 +127,8 @@ private fun SoundCard(settings: GlobalSettings, onChange: (GlobalSettings) -> Un
             { onChange(settings.copy(crescendo = it)) },
             description = stringResource(R.string.crescendo_desc),
         )
+        SwitchRow(stringResource(R.string.vibrate), settings.vibrate, { onChange(settings.copy(vibrate = it)) })
+        SnoozeRow(settings.snooze, defaultSnooze = null) { snooze -> snooze?.let { onChange(settings.copy(snooze = it)) } }
     }
 }
 

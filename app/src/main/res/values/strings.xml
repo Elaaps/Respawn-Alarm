@@ -145,7 +145,7 @@
     <string name="snooze_count">Snoozes allowed</string>
     <string name="snooze_minutes">Length</string>
     <string name="minutes_value">%1$d min</string>
-    <string name="section_sound">Sound</string>
+    <string name="section_sound">Ringing</string>
     <string name="tone">Alarm sound</string>
     <string name="tone_system">Default alarm sound</string>
     <string name="tone_custom">Chosen sound</string>
