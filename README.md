@@ -27,7 +27,6 @@ You can also grab the APK from the [Releases](https://github.com/Elaaps/Respawn-
 ## Limitations
 
 - A touch is counted when a finger goes down. Holding a finger down without lifting it counts as inactivity.
-- Force-stopping the app from the system settings stops the alarm. This is a tool for willing users, not a lock.
 
 ## Build
 

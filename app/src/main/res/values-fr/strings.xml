@@ -116,6 +116,10 @@
     <string name="loading_grace_length">Au maximum</string>
     <string name="seconds_value">%1$d s</string>
     <string name="target_app">Appli cible</string>
+    <string name="section_protection">Protection</string>
+    <string name="force_stop_guard">Empêcher l\'arrêt forcé</string>
+    <string name="force_stop_guard_desc">Fait de Respawn Alarm une appli d\'administration de l\'appareil.</string>
+    <string name="force_stop_guard_explanation">Nécessaire pour empêcher l\'arrêt forcé de Respawn Alarm.</string>
     <string name="section_permissions">Autorisations</string>
     <string name="all_granted">Tout est autorisé.</string>
     <string name="grant">Autoriser</string>

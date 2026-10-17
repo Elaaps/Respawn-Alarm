@@ -115,6 +115,10 @@
     <string name="loading_grace_length">At most</string>
     <string name="seconds_value">%1$d s</string>
     <string name="target_app">Target app</string>
+    <string name="section_protection">Protection</string>
+    <string name="force_stop_guard">Prevent force stop</string>
+    <string name="force_stop_guard_desc">Makes Respawn Alarm a device admin app.</string>
+    <string name="force_stop_guard_explanation">Needed to prevent force stopping Respawn Alarm.</string>
     <string name="section_permissions">Permissions</string>
     <string name="all_granted">Everything is allowed.</string>
     <string name="grant">Allow</string>

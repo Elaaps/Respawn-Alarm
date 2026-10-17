@@ -69,6 +69,7 @@ fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
             SessionCard(settings, ::update)
             SoundCard(settings, ::update)
             OverlayCard(settings, ::update, onResetPosition = store::resetOverlayPosition)
+            ProtectionCard(resumeCount)
             PermissionsCard(resumeCount, onSetup)
             TestCard(settings)
         }
@@ -162,6 +163,34 @@ private fun stepLoadingGrace(settings: GlobalSettings, deltaSec: Int): Int =
 
 private fun stepInactivity(settings: GlobalSettings, deltaSec: Int): Int =
     (settings.inactivitySec + deltaSec).coerceIn(INACTIVITY_RANGE_SEC)
+
+@Composable
+private fun ProtectionCard(resumeCount: Int) {
+    val context = LocalContext.current
+    val state by SessionService.state.collectAsStateWithLifecycle()
+    var active by remember(resumeCount) { mutableStateOf(ForceStopGuard.isActive(context)) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        active = ForceStopGuard.isActive(context)
+    }
+
+    SectionCard(stringResource(R.string.section_protection)) {
+        SwitchRow(
+            stringResource(R.string.force_stop_guard),
+            active,
+            { enable ->
+                if (enable) {
+                    launcher.launch(ForceStopGuard.enableIntent(context))
+                } else {
+                    ForceStopGuard.disable(context)
+                    // The admin stays active until the system has delivered DEVICE_ADMIN_DISABLED.
+                    active = false
+                }
+            },
+            description = stringResource(R.string.force_stop_guard_desc),
+            enabled = state?.mode != SessionService.Mode.ALARM,
+        )
+    }
+}
 
 @Composable
 private fun PermissionsCard(resumeCount: Int, onSetup: () -> Unit) {
