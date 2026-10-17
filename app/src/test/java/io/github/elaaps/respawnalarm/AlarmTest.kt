@@ -147,6 +147,15 @@ class AlarmTest {
     }
 
     @Test
+    fun `snooze, turned off, allows no snooze`() {
+        val snooze = Snooze(maxCount = 3, minutes = 5, enabled = false)
+
+        val allowed = snooze.allowedCount
+
+        assertEquals(0, allowed)
+    }
+
+    @Test
     fun `snooze, with more snoozes than allowed, throws`() {
         val error = assertThrows(IllegalArgumentException::class.java) { Snooze(maxCount = 9, minutes = 5) }
 

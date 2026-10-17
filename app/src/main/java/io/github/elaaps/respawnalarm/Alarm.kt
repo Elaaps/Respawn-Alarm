@@ -18,19 +18,19 @@ sealed interface Tone {
     data class Custom(val uri: String) : Tone
 }
 
-data class Snooze(val maxCount: Int, val minutes: Int) {
+data class Snooze(val maxCount: Int, val minutes: Int, val enabled: Boolean = true) {
     init {
         require(maxCount in COUNT_RANGE) { "maxCount must be in $COUNT_RANGE, was $maxCount" }
         require(minutes in MINUTES_RANGE) { "minutes must be in $MINUTES_RANGE, was $minutes" }
     }
 
-    val isAllowed: Boolean get() = maxCount > 0
+    val allowedCount: Int get() = if (enabled) maxCount else 0
 
     companion object {
-        val COUNT_RANGE = 0..5
+        val COUNT_RANGE = 1..5
         val MINUTES_RANGE = 1..30
 
-        val OFF = Snooze(maxCount = 0, minutes = 5)
+        val OFF = Snooze(maxCount = 1, minutes = 5, enabled = false)
     }
 }
 

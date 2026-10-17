@@ -77,7 +77,7 @@ class SettingsJsonTest {
             vibrate = false,
             volume = VolumeMode.PHONE,
             crescendo = true,
-            snooze = Snooze(maxCount = 1, minutes = 5),
+            snooze = Snooze(maxCount = 3, minutes = 7, enabled = false),
             loadingGraceEnabled = true,
             loadingGraceSec = 45,
             overlayEnabled = false,
@@ -87,6 +87,24 @@ class SettingsJsonTest {
         val decoded = decodeSettings(encodeSettings(settings))
 
         assertEquals(settings, decoded)
+    }
+
+    @Test
+    fun `decodeSettings, with a snooze saved as zero snoozes, turns snooze off and keeps its length`() {
+        val json = """{"snooze":{"max_count":0,"minutes":10}}"""
+
+        val decoded = decodeSettings(json)
+
+        assertEquals(Snooze(maxCount = 1, minutes = 10, enabled = false), decoded.snooze)
+    }
+
+    @Test
+    fun `decodeSettings, with a snooze saved without its switch, turns snooze on`() {
+        val json = """{"snooze":{"max_count":2,"minutes":10}}"""
+
+        val decoded = decodeSettings(json)
+
+        assertEquals(Snooze(maxCount = 2, minutes = 10), decoded.snooze)
     }
 
     @Test

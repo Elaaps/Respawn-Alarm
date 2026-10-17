@@ -126,7 +126,7 @@ class SessionService : Service() {
                 durationMs = alarm.durationMs,
                 inactivityMs = alarm.inactivityMs,
                 snoozeMs = alarm.snoozeMs,
-                maxSnoozes = alarm.snooze.maxCount,
+                maxSnoozes = alarm.snooze.allowedCount,
                 loadingGraceMs = alarm.loadingGraceMs,
             )
         }
@@ -212,7 +212,7 @@ class SessionService : Service() {
             startedAt = ringingSince,
             endedAt = Instant.now(),
             resets = session.resets,
-            snoozes = alarm.snooze.maxCount - session.snoozesLeft,
+            snoozes = alarm.snooze.allowedCount - session.snoozesLeft,
             emergencyStop = emergencyStop,
         )
         SessionLog(this).add(record)

@@ -131,9 +131,6 @@ fun defaultLabel(value: String): String = stringResource(R.string.use_default, v
 fun markDefault(label: String, isDefault: Boolean): String = if (isDefault) defaultLabel(label) else label
 
 @Composable
-fun onOffLabel(enabled: Boolean): String = stringResource(if (enabled) R.string.on else R.string.off)
-
-@Composable
 fun volumeLabel(volume: VolumeMode): String = stringResource(
     when (volume) {
         VolumeMode.PHONE -> R.string.volume_phone
@@ -222,22 +219,22 @@ fun stepPlayTime(durationSec: Int, deltaSec: Int): Int = (durationSec + deltaSec
 private const val MILLIS_PER_SECOND = 1_000L
 
 @Composable
-fun snoozeLabel(snooze: Snooze): String =
-    if (snooze.isAllowed) stringResource(R.string.snooze_value, snooze.maxCount, snooze.minutes) else onOffLabel(enabled = false)
-
-@Composable
 fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, onChange: (Snooze?) -> Unit) {
     var editing by remember { mutableStateOf(false) }
     val shown = snooze ?: defaultSnooze ?: Snooze.OFF
-    val value = if (snooze == null && defaultSnooze != null) defaultLabel(snoozeLabel(defaultSnooze)) else snoozeLabel(shown)
-    ValueRow(stringResource(R.string.snooze), value) { editing = true }
+    val length = stringResource(R.string.snooze_value, shown.maxCount, shown.minutes)
+    val summary = markDefault(length, isDefault = snooze == null && defaultSnooze != null)
+    val change = { updated: Snooze -> onChange(ownValue(updated, defaultSnooze)) }
+    val toggle = { enabled: Boolean -> change(shown.copy(enabled = enabled)) }
+    SwitchWithDetailsRow(stringResource(R.string.snooze), summary, shown.enabled, toggle) { editing = true }
     if (editing) {
         AlertDialog(
             onDismissRequest = { editing = false },
             title = { Text(stringResource(R.string.snooze)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SnoozeSteppers(shown) { onChange(ownValue(it, defaultSnooze)) }
+                    SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle)
+                    SnoozeSteppers(shown, change)
                 }
             },
             confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },

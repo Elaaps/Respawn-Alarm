@@ -112,12 +112,17 @@ private fun toneFromJson(obj: JSONObject): Tone? = when (obj.optString(KEY_TYPE)
 }
 
 private fun snoozeToJson(snooze: Snooze): JSONObject =
-    JSONObject().put(KEY_SNOOZE_COUNT, snooze.maxCount).put(KEY_SNOOZE_MINUTES, snooze.minutes)
+    JSONObject()
+        .put(KEY_SNOOZE_COUNT, snooze.maxCount)
+        .put(KEY_SNOOZE_MINUTES, snooze.minutes)
+        .put(KEY_SNOOZE_ENABLED, snooze.enabled)
 
 private fun snoozeFromJson(obj: JSONObject): Snooze? {
-    val count = obj.intOrNull(KEY_SNOOZE_COUNT)?.takeIf { it in Snooze.COUNT_RANGE } ?: return null
+    val count = obj.intOrNull(KEY_SNOOZE_COUNT) ?: return null
     val minutes = obj.intOrNull(KEY_SNOOZE_MINUTES)?.takeIf { it in Snooze.MINUTES_RANGE } ?: return null
-    return Snooze(maxCount = count, minutes = minutes)
+    if (count == LEGACY_SNOOZE_OFF_COUNT) return Snooze.OFF.copy(minutes = minutes)
+    if (count !in Snooze.COUNT_RANGE) return null
+    return Snooze(maxCount = count, minutes = minutes, enabled = obj.optBoolean(KEY_SNOOZE_ENABLED, true))
 }
 
 private fun dateOrNull(text: String): LocalDate? = try {
@@ -152,6 +157,8 @@ private const val KEY_CRESCENDO = "crescendo"
 private const val KEY_SNOOZE = "snooze"
 private const val KEY_SNOOZE_COUNT = "max_count"
 private const val KEY_SNOOZE_MINUTES = "minutes"
+private const val KEY_SNOOZE_ENABLED = "enabled"
+private const val LEGACY_SNOOZE_OFF_COUNT = 0
 private const val KEY_OVERLAY = "overlay"
 private const val KEY_LOADING_GRACE = "loading_grace_sec"
 private const val KEY_LOADING_GRACE_ENABLED = "loading_grace_enabled"

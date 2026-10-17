@@ -137,10 +137,9 @@
 
     <string name="use_default">%1$s (default)</string>
     <string name="done">Done</string>
-    <string name="on">On</string>
-    <string name="off">Off</string>
     <string name="snooze">Snooze</string>
     <string name="snooze_value">%1$d × %2$d min</string>
+    <string name="snooze_use">Allow snoozing</string>
     <string name="snooze_count">Snoozes allowed</string>
     <string name="snooze_minutes">Length</string>
     <string name="minutes_value">%1$d min</string>
