@@ -10,6 +10,14 @@ An alarm clock you can only stop by playing. When it rings, you have to actively
   <a href="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg"><img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" alt="Health bar overlay over Geometry Dash" height="260"></a>
 </p>
 
+## Features
+
+- The alarm is like a video game boss: every second of play takes one HP off its health bar.
+- An overlay in the game shows the boss's health, or just the time left.
+- A victory screen when you win, with the time you got up, your attempts and your streak.
+- An emergency stop behind your screen lock, for real emergencies.
+- An optional protection against force stop. Respawn Alarm then becomes a device admin app, so that Android greys out "Force stop".
+
 ## How it works
 
 - Set the alarm.
