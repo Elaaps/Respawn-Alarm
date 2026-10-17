@@ -136,11 +136,10 @@
     <string name="ring">Sonner</string>
     <string name="cancel">Annuler</string>
 
-    <string name="use_default">Par défaut (%1$s)</string>
+    <string name="use_default">%1$s (par défaut)</string>
     <string name="done">OK</string>
     <string name="on">Activé</string>
     <string name="off">Désactivé</string>
-    <string name="choose_app">Choisir une appli…</string>
     <string name="snooze">Snooze</string>
     <string name="snooze_value">%1$d × %2$d min</string>
     <string name="snooze_count">Snoozes autorisés</string>
@@ -148,7 +147,7 @@
     <string name="minutes_value">%1$d min</string>
     <string name="section_sound">Sonnerie</string>
     <string name="tone">Son d\'alarme</string>
-    <string name="tone_system">Son d\'alarme par défaut</string>
+    <string name="tone_system">Son du système</string>
     <string name="tone_custom">Son choisi</string>
     <string name="tone_picker_title">Son d\'alarme</string>
     <string name="tone_pick">Choisir un son…</string>

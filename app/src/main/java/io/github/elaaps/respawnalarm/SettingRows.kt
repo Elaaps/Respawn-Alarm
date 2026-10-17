@@ -128,6 +128,9 @@ fun <T> ChoiceRow(label: String, choices: List<Choice<T>>, selected: T, onSelect
 fun defaultLabel(value: String): String = stringResource(R.string.use_default, value)
 
 @Composable
+fun markDefault(label: String, isDefault: Boolean): String = if (isDefault) defaultLabel(label) else label
+
+@Composable
 fun onOffLabel(enabled: Boolean): String = stringResource(if (enabled) R.string.on else R.string.off)
 
 @Composable
@@ -164,23 +167,26 @@ private fun toneOf(uri: Uri): Tone =
 @Composable
 fun ToneRow(tone: Tone?, defaultTone: Tone?, onChange: (Tone?) -> Unit) {
     val context = LocalContext.current
-    val picker = rememberLauncherForActivityResult(PickAlarmTone()) { uri -> uri?.let { onChange(toneOf(it)) } }
+    val picker = rememberLauncherForActivityResult(PickAlarmTone()) { uri -> uri?.let { onChange(ownValue(toneOf(it), defaultTone)) } }
     val current = tone ?: defaultTone ?: Tone.SystemDefault
+    val customDefault = defaultTone as? Tone.Custom
+    val ownCustom = (current as? Tone.Custom)?.takeIf { it != customDefault }
     val choices = buildList {
-        if (defaultTone != null) add(Choice(ToneChoice.Default, defaultLabel(toneLabel(context, defaultTone))))
-        add(Choice(ToneChoice.System, stringResource(R.string.tone_system)))
-        if (current is Tone.Custom) add(Choice(ToneChoice.Current, toneLabel(context, current)))
+        val system = toneLabel(context, Tone.SystemDefault)
+        add(Choice(ToneChoice.System, markDefault(system, isDefault = defaultTone == Tone.SystemDefault)))
+        if (customDefault != null) add(Choice(ToneChoice.Default, defaultLabel(toneLabel(context, customDefault))))
+        if (ownCustom != null) add(Choice(ToneChoice.Current, toneLabel(context, ownCustom)))
         add(Choice(ToneChoice.Pick, stringResource(R.string.tone_pick)))
     }
-    val selected = when {
-        tone == null && defaultTone != null -> ToneChoice.Default
-        current is Tone.Custom -> ToneChoice.Current
-        else -> ToneChoice.System
+    val selected = when (current) {
+        Tone.SystemDefault -> ToneChoice.System
+        customDefault -> ToneChoice.Default
+        else -> ToneChoice.Current
     }
     ChoiceRow(stringResource(R.string.tone), choices, selected) { choice ->
         when (choice) {
             ToneChoice.Default -> onChange(null)
-            ToneChoice.System -> onChange(Tone.SystemDefault)
+            ToneChoice.System -> onChange(ownValue(Tone.SystemDefault, defaultTone))
             ToneChoice.Current -> Unit
             ToneChoice.Pick -> picker.launch((current as? Tone.Custom)?.uri?.toUri())
         }
@@ -258,13 +264,12 @@ private fun SnoozeSteppers(shown: Snooze, onChange: (Snooze) -> Unit) {
 private enum class ToneChoice { Default, System, Current, Pick }
 
 @Composable
-fun TargetAppRow(packageName: String?, defaultPackage: String?, overridable: Boolean, onChange: (String?) -> Unit) {
+fun TargetAppRow(packageName: String?, defaultPackage: String?, onChange: (String?) -> Unit) {
     val context = LocalContext.current
-    var choosing by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
     val shown = packageName ?: defaultPackage
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { if (overridable) choosing = true else picking = true },
+        modifier = Modifier.fillMaxWidth().clickable { picking = true },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -272,38 +277,19 @@ fun TargetAppRow(packageName: String?, defaultPackage: String?, overridable: Boo
         if (icon != null) Image(icon, contentDescription = null, modifier = Modifier.size(40.dp))
         Column(Modifier.weight(1f)) {
             Text(stringResource(R.string.target_app), style = MaterialTheme.typography.bodyLarge)
-            val name = appLabel(context, shown)
             Text(
-                if (overridable && packageName == null) defaultLabel(name) else name,
+                markDefault(appLabel(context, shown), isDefault = packageName == null && defaultPackage != null),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
     }
-    if (choosing) {
-        AlertDialog(
-            onDismissRequest = { choosing = false },
-            title = { Text(stringResource(R.string.target_app)) },
-            text = {
-                Column {
-                    TextButton(onClick = {
-                        choosing = false
-                        onChange(null)
-                    }) { Text(defaultLabel(appLabel(context, defaultPackage))) }
-                    TextButton(onClick = {
-                        choosing = false
-                        picking = true
-                    }) { Text(stringResource(R.string.choose_app)) }
-                }
-            },
-            confirmButton = { TextButton(onClick = { choosing = false }) { Text(stringResource(R.string.cancel)) } },
-        )
-    }
     if (picking) {
         AppPickerDialog(
+            defaultPackage = defaultPackage,
             onPick = {
                 picking = false
-                onChange(it)
+                onChange(ownValue(it, defaultPackage))
             },
             onDismiss = { picking = false },
         )

@@ -167,7 +167,7 @@ private fun TargetPage(suggested: String?, onChoose: (String) -> Unit) {
     var target by rememberSaveable { mutableStateOf(suggested) }
     PageTitle(stringResource(R.string.target_app))
     Text(stringResource(R.string.onboarding_target_text))
-    TargetAppRow(target, defaultPackage = null, overridable = false) { target = it }
+    TargetAppRow(target, defaultPackage = null) { target = it }
     Button(
         onClick = { target?.let(onChoose) },
         enabled = target != null,

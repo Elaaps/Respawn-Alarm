@@ -92,7 +92,7 @@ private fun SessionCard(settings: GlobalSettings, onChange: (GlobalSettings) -> 
             onPlus = { onChange(settings.copy(inactivitySec = stepInactivity(settings, INACTIVITY_STEP_SEC))) },
         )
         LoadingGraceRow(settings, onChange)
-        TargetAppRow(settings.targetPackage, defaultPackage = null, overridable = false) {
+        TargetAppRow(settings.targetPackage, defaultPackage = null) {
             onChange(settings.copy(targetPackage = it))
         }
     }

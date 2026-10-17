@@ -101,26 +101,21 @@ fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
 @Composable
 private fun OverridesCard(alarm: Alarm, settings: GlobalSettings, onChange: (Alarm) -> Unit) {
     SectionCard(stringResource(R.string.section_overrides)) {
-        TargetAppRow(alarm.targetPackage, settings.targetPackage, overridable = true) {
+        TargetAppRow(alarm.targetPackage, settings.targetPackage) {
             onChange(alarm.copy(targetPackage = it))
         }
         PlayTimeRow(alarm.durationSec, settings.durationSec) { onChange(alarm.copy(durationSec = it)) }
         ToneRow(alarm.tone, defaultTone = settings.tone) { onChange(alarm.copy(tone = it)) }
         ChoiceRow(
             stringResource(R.string.volume),
-            listOf(Choice<VolumeMode?>(null, defaultLabel(volumeLabel(settings.volume)))) +
-                VolumeMode.entries.map { Choice(it, volumeLabel(it)) },
-            alarm.volume,
-        ) { onChange(alarm.copy(volume = it)) }
-        ChoiceRow(
+            VolumeMode.entries.map { Choice(it, markDefault(volumeLabel(it), isDefault = it == settings.volume)) },
+            alarm.volume ?: settings.volume,
+        ) { onChange(alarm.copy(volume = ownValue(it, settings.volume))) }
+        SwitchRow(
             stringResource(R.string.vibrate),
-            listOf(
-                Choice(null, defaultLabel(onOffLabel(settings.vibrate))),
-                Choice(true, onOffLabel(enabled = true)),
-                Choice(false, onOffLabel(enabled = false)),
-            ),
-            alarm.vibrate,
-        ) { onChange(alarm.copy(vibrate = it)) }
+            alarm.vibrate ?: settings.vibrate,
+            { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) },
+        )
         SnoozeRow(alarm.snooze, defaultSnooze = settings.snooze) { onChange(alarm.copy(snooze = it)) }
     }
 }

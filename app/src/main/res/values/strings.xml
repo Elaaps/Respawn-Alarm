@@ -135,11 +135,10 @@
     <string name="ring">Ring</string>
     <string name="cancel">Cancel</string>
 
-    <string name="use_default">Default (%1$s)</string>
+    <string name="use_default">%1$s (default)</string>
     <string name="done">Done</string>
     <string name="on">On</string>
     <string name="off">Off</string>
-    <string name="choose_app">Choose an app…</string>
     <string name="snooze">Snooze</string>
     <string name="snooze_value">%1$d × %2$d min</string>
     <string name="snooze_count">Snoozes allowed</string>
@@ -147,7 +146,7 @@
     <string name="minutes_value">%1$d min</string>
     <string name="section_sound">Ringing</string>
     <string name="tone">Alarm sound</string>
-    <string name="tone_system">Default alarm sound</string>
+    <string name="tone_system">System sound</string>
     <string name="tone_custom">Chosen sound</string>
     <string name="tone_picker_title">Alarm sound</string>
     <string name="tone_pick">Choose a sound…</string>

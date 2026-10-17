@@ -33,7 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun AppPickerDialog(onPick: (String) -> Unit, onDismiss: () -> Unit) {
+fun AppPickerDialog(defaultPackage: String?, onPick: (String) -> Unit, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val apps by produceState<List<LaunchableApp>?>(null) {
         value = withContext(Dispatchers.Default) { loadLaunchableApps(context) }
@@ -62,7 +62,7 @@ fun AppPickerDialog(onPick: (String) -> Unit, onDismiss: () -> Unit) {
                     }
                     LazyColumn(Modifier.fillMaxSize()) {
                         items(shown, key = { it.packageName }) { app ->
-                            AppRow(app) { onPick(app.packageName) }
+                            AppRow(app, isDefault = app.packageName == defaultPackage) { onPick(app.packageName) }
                         }
                     }
                 }
@@ -72,7 +72,7 @@ fun AppPickerDialog(onPick: (String) -> Unit, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun AppRow(app: LaunchableApp, onClick: () -> Unit) {
+private fun AppRow(app: LaunchableApp, isDefault: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -80,7 +80,7 @@ private fun AppRow(app: LaunchableApp, onClick: () -> Unit) {
     ) {
         Image(app.icon, contentDescription = null, modifier = Modifier.size(40.dp))
         Column {
-            Text(app.label, style = MaterialTheme.typography.bodyLarge)
+            Text(markDefault(app.label, isDefault), style = MaterialTheme.typography.bodyLarge)
             Text(
                 app.packageName,
                 style = MaterialTheme.typography.bodySmall,
