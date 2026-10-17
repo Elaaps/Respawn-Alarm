@@ -43,6 +43,7 @@ class SessionService : Service() {
     private var victory: Victory? = null
     private var wonAt = 0L
     private var awayTicks = 0
+    private var victoryOnLeave = true
 
     private val tick = object : Runnable {
         override fun run() {
@@ -161,6 +162,7 @@ class SessionService : Service() {
         touchWatcher = TouchWatcher(this).also { overlayOk = it.start() }
         if (newMode == Mode.ALARM) {
             val settings = store.settings()
+            victoryOnLeave = settings.victoryOnLeave
             if (settings.overlayEnabled) countdown = CountdownOverlay(this, store, settings.overlayStyle, onKnockedOutTap = ::showVictory)
             sound = AlarmSound(this, alarm).also { it.play() }
             showRingingScreen()
@@ -235,9 +237,10 @@ class SessionService : Service() {
     private fun watchVictory(now: Long, foreground: String?) {
         val won = victory ?: return finish()
         awayTicks = if (foreground == alarm.targetPackage) 0 else awayTicks + 1
+        val leftGame = awayTicks >= AWAY_TICKS_BEFORE_VICTORY
         when {
-            awayTicks >= AWAY_TICKS_BEFORE_VICTORY -> showVictory()
-            now - wonAt >= VICTORY_WATCH_MS -> {
+            leftGame && victoryOnLeave -> showVictory()
+            leftGame || now - wonAt >= VICTORY_WATCH_MS -> {
                 finish()
                 notifications.done(won)
             }

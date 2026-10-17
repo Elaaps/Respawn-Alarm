@@ -181,6 +181,9 @@
     <string name="overlay_style">Style</string>
     <string name="overlay_style_health_bar">Barre de vie</string>
     <string name="overlay_style_timer">Temps restant</string>
+    <string name="section_victory">Victoire</string>
+    <string name="victory_on_leave">Ouvrir en quittant le jeu</string>
+    <string name="victory_on_leave_desc">Sinon, touche l\'overlay ou la notification.</string>
     <string name="overlay_reset">Réinitialiser la position</string>
 
     <string name="channel_upcoming">Alarmes à venir</string>

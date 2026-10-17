@@ -87,6 +87,7 @@ data class GlobalSettings(
     val loadingGraceSec: Int = DEFAULT_LOADING_GRACE_SEC,
     val overlayEnabled: Boolean = true,
     val overlayStyle: OverlayStyle = OverlayStyle.HEALTH_BAR,
+    val victoryOnLeave: Boolean = true,
     val upcomingNoticeHours: Int? = DEFAULT_UPCOMING_NOTICE_HOURS,
 ) {
     init {

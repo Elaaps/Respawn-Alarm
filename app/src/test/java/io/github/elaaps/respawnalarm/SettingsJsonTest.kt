@@ -84,6 +84,7 @@ class SettingsJsonTest {
             loadingGraceSec = 45,
             overlayEnabled = false,
             overlayStyle = OverlayStyle.TIMER,
+            victoryOnLeave = false,
             upcomingNoticeHours = 10,
         )
 

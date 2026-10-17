@@ -78,6 +78,7 @@ fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
             StopGroup(settings, ::update)
             RingingGroup(settings, ::update)
             OverlayGroup(settings, ::update, onResetPosition = store::resetOverlayPosition)
+            VictoryGroup(settings, ::update)
             ProtectionGroup(resumeCount)
             PermissionsGroup(resumeCount, onSetup)
             TestGroup(settings)
@@ -187,6 +188,22 @@ private fun OverlayGroup(settings: GlobalSettings, onChange: (GlobalSettings) ->
                 RowIcon(R.drawable.ic_open_with, IconStyle.OTHER),
                 enabled = settings.overlayEnabled,
                 onClick = onResetPosition,
+            )
+        }
+    }
+}
+
+@Composable
+private fun VictoryGroup(settings: GlobalSettings, onChange: (GlobalSettings) -> Unit) {
+    RowGroup(stringResource(R.string.section_victory)) {
+        row { shapes ->
+            SwitchRow(
+                stringResource(R.string.victory_on_leave),
+                settings.victoryOnLeave,
+                { onChange(settings.copy(victoryOnLeave = it)) },
+                shapes,
+                RowIcon(R.drawable.ic_emoji_events, IconStyle.OTHER),
+                description = stringResource(R.string.victory_on_leave_desc),
             )
         }
     }

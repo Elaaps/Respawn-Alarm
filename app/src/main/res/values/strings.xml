@@ -182,6 +182,9 @@
     <string name="overlay_style">Style</string>
     <string name="overlay_style_health_bar">Health bar</string>
     <string name="overlay_style_timer">Time left</string>
+    <string name="section_victory">Victory</string>
+    <string name="victory_on_leave">Open when leaving the game</string>
+    <string name="victory_on_leave_desc">Otherwise, tap the overlay or the notification.</string>
     <string name="overlay_reset">Reset position</string>
 
     <string name="channel_upcoming">Upcoming alarms</string>
