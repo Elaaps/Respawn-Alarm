@@ -319,7 +319,11 @@ private fun nextAlarmHeader(
     if (!hasTarget) return context.getString(R.string.home_no_alarm) to context.getString(R.string.next_need_target)
     if (next == null) return context.getString(R.string.home_no_alarm) to null
     val until = Duration.between(now, next.at)
-    val title = context.getString(R.string.home_next_alarm, until.toHours(), until.toMinutesPart())
+    val title = if (until.toDays() > 0) {
+        context.getString(R.string.home_next_alarm_days, until.toDays(), until.toHoursPart())
+    } else {
+        context.getString(R.string.home_next_alarm, until.toHours(), until.toMinutesPart())
+    }
     val date = next.at.format(DateTimeFormatter.ofPattern(context.getString(R.string.next_date_pattern)))
     return title to context.getString(R.string.home_next_alarm_at, date, formatClockTime(context, next.at.toLocalTime()))
 }

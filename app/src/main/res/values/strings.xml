@@ -51,6 +51,7 @@
 
     <string name="home_no_alarm">No alarm set</string>
     <string name="home_next_alarm">Alarm in %1$d h %2$d min</string>
+    <string name="home_next_alarm_days">Alarm in %1$d d %2$d h</string>
     <string name="home_next_alarm_at">%1$s at %2$s</string>
     <string name="action_add_alarm">Add an alarm</string>
     <string name="action_delete_all">Delete all alarms</string>
