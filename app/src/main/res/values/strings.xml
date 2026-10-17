@@ -125,6 +125,7 @@
         <item>S</item>
     </string-array>
     <string name="next_need_target">Pick the target app first.</string>
+    <string name="text_locale">en</string>
     <string name="next_date_pattern">EEEE, MMMM d</string>
     <string name="section_stop">To stop it</string>
     <string name="play_time">Play time</string>

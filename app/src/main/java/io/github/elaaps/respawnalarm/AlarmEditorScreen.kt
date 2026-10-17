@@ -41,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
@@ -197,7 +196,7 @@ private fun SkipNextRow(alarm: Alarm, shapes: ListItemShapes, onChange: (Alarm) 
     val unskipped = alarm.copy(skippedDate = null)
     val nextDate = nextRing(unskipped, now)?.toLocalDate() ?: return
     val skippedDate = pendingSkip(alarm, now)
-    val pattern = DateTimeFormatter.ofPattern(stringResource(R.string.short_date_pattern))
+    val pattern = dateFormatter(R.string.short_date_pattern)
     SwitchRow(
         stringResource(R.string.skip_next),
         checked = skippedDate != null,

@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -99,7 +98,7 @@ private fun RepeatingStepButton(icon: Int, onStep: () -> Unit) {
 @Composable
 fun DayPicker(days: Set<DayOfWeek>, onChange: (Set<DayOfWeek>) -> Unit, modifier: Modifier = Modifier) {
     val letters = stringArrayResource(R.array.day_letters)
-    val locale = LocalLocale.current.platformLocale
+    val locale = textLocale(LocalContext.current)
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
         DayOfWeek.entries.forEachIndexed { index, day ->
             val shapes = when (index) {

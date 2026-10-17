@@ -78,7 +78,6 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.launch
 
@@ -280,7 +279,7 @@ private fun NextAlarmHero(next: ScheduledAlarm?, now: ZonedDateTime, hasTarget: 
                 )
             }
         }
-        val date = scheduled.at.format(DateTimeFormatter.ofPattern(stringResource(R.string.next_date_pattern)))
+        val date = scheduled.at.format(dateFormatter(R.string.next_date_pattern))
         Text(
             stringResource(R.string.home_next_alarm_at, date, formatClockTime(context, scheduled.at.toLocalTime())),
             color = colors.onSurfaceVariant,
@@ -407,7 +406,7 @@ private fun AlarmCard(
                 if (alarm.label.isNotBlank()) Text(alarm.label, style = MaterialTheme.typography.bodyMedium)
                 if (!alarm.isOneShot) DayChips(alarm.days)
                 skippedDate?.let { date ->
-                    val pattern = DateTimeFormatter.ofPattern(stringResource(R.string.short_date_pattern))
+                    val pattern = dateFormatter(R.string.short_date_pattern)
                     Text(
                         stringResource(R.string.alarm_skipped, date.format(pattern)),
                         style = MaterialTheme.typography.bodySmall,

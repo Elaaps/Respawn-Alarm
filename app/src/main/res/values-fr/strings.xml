@@ -124,6 +124,7 @@
         <item>D</item>
     </string-array>
     <string name="next_need_target">Choisis d\'abord l\'appli cible.</string>
+    <string name="text_locale">fr</string>
     <string name="next_date_pattern">EEEE d MMMM</string>
     <string name="section_stop">Pour l\'arrêter</string>
     <string name="play_time">Durée de jeu</string>

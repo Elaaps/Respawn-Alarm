@@ -3,7 +3,6 @@ package io.github.elaaps.respawnalarm
 import android.content.Context
 import java.time.DayOfWeek
 import java.time.format.TextStyle
-import java.util.Locale
 
 sealed interface DaysDescription {
     data object Once : DaysDescription
@@ -30,5 +29,5 @@ fun daysSummary(context: Context, days: Set<DayOfWeek>): String = when (val desc
     DaysDescription.EveryDay -> context.getString(R.string.days_every_day)
     DaysDescription.Weekdays -> context.getString(R.string.days_weekdays)
     DaysDescription.Weekend -> context.getString(R.string.days_weekend)
-    is DaysDescription.Some -> description.days.joinToString(", ") { it.getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
+    is DaysDescription.Some -> description.days.joinToString(", ") { it.getDisplayName(TextStyle.SHORT, textLocale(context)) }
 }
