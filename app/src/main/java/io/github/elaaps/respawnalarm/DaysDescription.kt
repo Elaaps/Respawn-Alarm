@@ -26,7 +26,7 @@ fun describeDays(days: Set<DayOfWeek>): DaysDescription = when (days) {
 }
 
 fun daysSummary(context: Context, days: Set<DayOfWeek>): String = when (val description = describeDays(days)) {
-    DaysDescription.Once -> context.getString(R.string.days_once)
+    DaysDescription.Once -> ""
     DaysDescription.EveryDay -> context.getString(R.string.days_every_day)
     DaysDescription.Weekdays -> context.getString(R.string.days_weekdays)
     DaysDescription.Weekend -> context.getString(R.string.days_weekend)

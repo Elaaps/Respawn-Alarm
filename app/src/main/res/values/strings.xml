@@ -63,7 +63,6 @@
     <string name="alarm_deleted">Alarm deleted</string>
     <string name="undo">Undo</string>
     <string name="delete">Delete</string>
-    <string name="days_once">Once</string>
     <string name="days_every_day">Every day</string>
     <string name="days_weekdays">Weekdays</string>
     <string name="days_weekend">Weekend</string>

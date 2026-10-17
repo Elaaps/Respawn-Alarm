@@ -64,7 +64,6 @@
     <string name="alarm_deleted">Alarme supprimée</string>
     <string name="undo">Annuler</string>
     <string name="delete">Supprimer</string>
-    <string name="days_once">Une fois</string>
     <string name="days_every_day">Tous les jours</string>
     <string name="days_weekdays">En semaine</string>
     <string name="days_weekend">Le week-end</string>

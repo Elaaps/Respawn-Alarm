@@ -295,7 +295,9 @@ private fun AlarmCard(
                     color = if (alarm.enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
                 )
                 val details = listOf(alarm.label, daysSummary(context, alarm.days)).filter { it.isNotBlank() }
-                Text(details.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (details.isNotEmpty()) {
+                    Text(details.joinToString(" · "), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 skippedDate?.let { date ->
                     val pattern = DateTimeFormatter.ofPattern(stringResource(R.string.short_date_pattern))
                     Text(
