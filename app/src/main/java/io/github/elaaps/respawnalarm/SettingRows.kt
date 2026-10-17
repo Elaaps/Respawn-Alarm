@@ -91,7 +91,11 @@ fun SwitchWithDetailsRow(label: String, summary: String, checked: Boolean, onCha
                 .padding(vertical = 4.dp),
         ) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                if (checked) summary else stringResource(R.string.off),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         VerticalDivider(Modifier.height(DETAILS_DIVIDER_HEIGHT).padding(horizontal = 12.dp))
         Switch(checked = checked, onCheckedChange = onChange)
