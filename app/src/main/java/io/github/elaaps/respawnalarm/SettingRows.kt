@@ -7,50 +7,79 @@ import android.media.RingtoneManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ListItemColors
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 
-@Composable
-fun ValueRow(label: String, value: String, enabled: Boolean = true, onClick: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .alpha(contentAlpha(enabled))
-            .padding(vertical = 4.dp),
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyLarge)
-        Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+class RowGroupScope {
+    val rows = mutableListOf<@Composable (ListItemShapes) -> Unit>()
+
+    fun row(content: @Composable (ListItemShapes) -> Unit) {
+        rows += content
     }
+}
+
+@Composable
+fun RowGroup(title: String? = null, build: RowGroupScope.() -> Unit) {
+    val rows = RowGroupScope().apply(build).rows
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+        if (title != null) {
+            Text(
+                title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 6.dp),
+            )
+        }
+        rows.forEachIndexed { index, row ->
+            key(index) { row(ListItemDefaults.segmentedShapes(index, rows.size)) }
+        }
+    }
+}
+
+@Composable
+fun ValueRow(
+    label: String,
+    value: String?,
+    shapes: ListItemShapes,
+    icon: RowIcon? = null,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    SegmentedListItem(
+        onClick = onClick,
+        shapes = shapes,
+        enabled = enabled,
+        leadingContent = icon?.let { { ShapedIcon(it) } },
+        supportingContent = value?.let { { Text(it) } },
+    ) { Text(label) }
 }
 
 @Composable
@@ -58,62 +87,97 @@ fun SwitchRow(
     label: String,
     checked: Boolean,
     onChange: (Boolean) -> Unit,
+    shapes: ListItemShapes,
+    icon: RowIcon? = null,
     description: String? = null,
     enabled: Boolean = true,
     greyedOut: Boolean = !enabled,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f).alpha(contentAlpha(enabled = !greyedOut))) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            if (description != null) {
-                Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Switch(checked = checked, onCheckedChange = null, enabled = enabled)
+    val leading: (@Composable () -> Unit)? = icon?.let { { ShapedIcon(it) } }
+    val supporting: (@Composable () -> Unit)? = description?.let { { Text(it) } }
+    val trailing = @Composable { Switch(checked = checked, onCheckedChange = null, enabled = enabled) }
+    if (enabled) {
+        SegmentedListItem(
+            checked = checked,
+            onCheckedChange = onChange,
+            shapes = shapes,
+            colors = steadyColors(),
+            leadingContent = leading,
+            trailingContent = trailing,
+            supportingContent = supporting,
+        ) { Text(label) }
+    } else {
+        SegmentedListItem(
+            shapes = shapes,
+            enabled = !greyedOut,
+            leadingContent = leading,
+            trailingContent = trailing,
+            supportingContent = supporting,
+        ) { Text(label) }
     }
 }
 
 @Composable
-fun SwitchWithDetailsRow(label: String, summary: String, checked: Boolean, onChange: (Boolean) -> Unit, onOpen: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(
-            Modifier
-                .weight(1f)
-                .clip(MaterialTheme.shapes.small)
-                .clickable(onClick = onOpen)
-                .padding(vertical = 4.dp),
-        ) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                if (checked) summary else stringResource(R.string.off),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        VerticalDivider(Modifier.height(DETAILS_DIVIDER_HEIGHT).padding(horizontal = 12.dp))
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
+fun SwitchWithDetailsRow(
+    label: String,
+    summary: String,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit,
+    shapes: ListItemShapes,
+    icon: RowIcon? = null,
+    onOpen: () -> Unit,
+) {
+    SegmentedListItem(
+        onClick = onOpen,
+        shapes = shapes,
+        leadingContent = icon?.let { { ShapedIcon(it) } },
+        supportingContent = { Text(if (checked) summary else stringResource(R.string.off)) },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                VerticalDivider(Modifier.height(DETAILS_DIVIDER_HEIGHT).padding(end = 12.dp))
+                Switch(checked = checked, onCheckedChange = onChange)
+            }
+        },
+    ) { Text(label) }
 }
 
 private val DETAILS_DIVIDER_HEIGHT = 32.dp
 
-private fun contentAlpha(enabled: Boolean): Float = if (enabled) 1f else DISABLED_CONTENT_ALPHA
-
-private const val DISABLED_CONTENT_ALPHA = 0.38f
+@Composable
+private fun steadyColors(): ListItemColors {
+    val base = ListItemDefaults.segmentedColors()
+    return ListItemDefaults.segmentedColors(
+        selectedContainerColor = base.containerColor,
+        selectedContentColor = base.contentColor,
+        selectedLeadingContentColor = base.leadingContentColor,
+        selectedTrailingContentColor = base.trailingContentColor,
+        selectedOverlineContentColor = base.overlineContentColor,
+        selectedSupportingContentColor = base.supportingContentColor,
+    )
+}
 
 @Composable
-fun VibrateRow(alarm: ResolvedAlarm, onChange: (Boolean) -> Unit) {
+fun StepperRow(label: String, value: String, shapes: ListItemShapes, icon: RowIcon, onMinus: () -> Unit, onPlus: () -> Unit) {
+    var editing by remember { mutableStateOf(false) }
+    ValueRow(label, value, shapes, icon) { editing = true }
+    if (editing) {
+        AlertDialog(
+            onDismissRequest = { editing = false },
+            title = { Text(label) },
+            text = { Stepper(label = "", value = value, onMinus = onMinus, onPlus = onPlus) },
+            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
+        )
+    }
+}
+
+@Composable
+fun VibrateRow(alarm: ResolvedAlarm, shapes: ListItemShapes, onChange: (Boolean) -> Unit) {
     SwitchRow(
         stringResource(R.string.vibrate),
         alarm.vibrate,
         onChange,
+        shapes,
+        icon = RowIcon(R.drawable.ic_vibration, IconStyle.RINGING),
         description = if (alarm.soundEnabled) null else stringResource(R.string.vibrate_forced),
         enabled = alarm.soundEnabled,
         greyedOut = false,
@@ -123,9 +187,17 @@ fun VibrateRow(alarm: ResolvedAlarm, onChange: (Boolean) -> Unit) {
 data class Choice<T>(val value: T, val label: String)
 
 @Composable
-fun <T> ChoiceRow(label: String, choices: List<Choice<T>>, selected: T, enabled: Boolean = true, onSelect: (T) -> Unit) {
+fun <T> ChoiceRow(
+    label: String,
+    choices: List<Choice<T>>,
+    selected: T,
+    shapes: ListItemShapes,
+    icon: RowIcon? = null,
+    enabled: Boolean = true,
+    onSelect: (T) -> Unit,
+) {
     var choosing by remember { mutableStateOf(false) }
-    ValueRow(label, selectedLabel(choices, selected), enabled) { choosing = true }
+    ValueRow(label, selectedLabel(choices, selected), shapes, icon, enabled) { choosing = true }
     if (choosing) ChoiceDialog(label, choices, selected, onSelect) { choosing = false }
 }
 
@@ -201,6 +273,7 @@ fun ToneRow(
     tone: Tone?,
     defaultTone: Tone?,
     soundEnabled: Boolean,
+    shapes: ListItemShapes,
     onSoundChange: (Boolean) -> Unit,
     onChange: (Tone?) -> Unit,
 ) {
@@ -223,7 +296,14 @@ fun ToneRow(
         else -> ToneChoice.Current
     }
     val label = stringResource(R.string.tone)
-    SwitchWithDetailsRow(label, selectedLabel(choices, selected), soundEnabled, onSoundChange) { choosing = true }
+    SwitchWithDetailsRow(
+        label,
+        selectedLabel(choices, selected),
+        soundEnabled,
+        onSoundChange,
+        shapes,
+        RowIcon(R.drawable.ic_music_note, IconStyle.RINGING),
+    ) { choosing = true }
     if (choosing) {
         ChoiceDialog(label, choices, selected, onDismiss = { choosing = false }, onSelect = { choice ->
             when (choice) {
@@ -237,27 +317,17 @@ fun ToneRow(
 }
 
 @Composable
-fun PlayTimeRow(durationSec: Int?, defaultSec: Int, onChange: (Int?) -> Unit) {
-    var editing by remember { mutableStateOf(false) }
-    val defaultText = formatDuration(defaultSec * MILLIS_PER_SECOND)
-    val value = durationSec?.let { formatDuration(it * MILLIS_PER_SECOND) } ?: defaultLabel(defaultText)
-    ValueRow(stringResource(R.string.play_time), value) { editing = true }
-    if (editing) {
-        AlertDialog(
-            onDismissRequest = { editing = false },
-            title = { Text(stringResource(R.string.play_time)) },
-            text = {
-                val shownSec = durationSec ?: defaultSec
-                Stepper(
-                    label = "",
-                    value = formatDuration(shownSec * MILLIS_PER_SECOND),
-                    onMinus = { onChange(ownValue(stepPlayTime(shownSec, -GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
-                    onPlus = { onChange(ownValue(stepPlayTime(shownSec, GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
-                )
-            },
-            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
-        )
-    }
+fun PlayTimeRow(durationSec: Int?, defaultSec: Int?, shapes: ListItemShapes, onChange: (Int?) -> Unit) {
+    val shownSec = durationSec ?: defaultSec ?: GlobalSettings().durationSec
+    val text = formatDuration(shownSec * MILLIS_PER_SECOND)
+    StepperRow(
+        stringResource(R.string.play_time),
+        markDefault(text, isDefault = durationSec == null && defaultSec != null),
+        shapes,
+        RowIcon(R.drawable.ic_timer, IconStyle.STOP),
+        onMinus = { onChange(ownValue(stepPlayTime(shownSec, -GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
+        onPlus = { onChange(ownValue(stepPlayTime(shownSec, GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
+    )
 }
 
 fun stepPlayTime(durationSec: Int, deltaSec: Int): Int = (durationSec + deltaSec).coerceIn(GlobalSettings.DURATION_RANGE_SEC)
@@ -265,21 +335,30 @@ fun stepPlayTime(durationSec: Int, deltaSec: Int): Int = (durationSec + deltaSec
 private const val MILLIS_PER_SECOND = 1_000L
 
 @Composable
-fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, onChange: (Snooze?) -> Unit) {
+fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, shapes: ListItemShapes, onChange: (Snooze?) -> Unit) {
     var editing by remember { mutableStateOf(false) }
     val shown = snooze ?: defaultSnooze ?: Snooze.OFF
     val length = stringResource(R.string.snooze_value, shown.maxCount, shown.minutes)
     val summary = markDefault(length, isDefault = snooze == null && defaultSnooze != null)
     val change = { updated: Snooze -> onChange(ownValue(updated, defaultSnooze)) }
     val toggle = { enabled: Boolean -> change(shown.copy(enabled = enabled)) }
-    SwitchWithDetailsRow(stringResource(R.string.snooze), summary, shown.enabled, toggle) { editing = true }
+    SwitchWithDetailsRow(
+        stringResource(R.string.snooze),
+        summary,
+        shown.enabled,
+        toggle,
+        shapes,
+        RowIcon(R.drawable.ic_snooze, IconStyle.RINGING),
+    ) { editing = true }
     if (editing) {
         AlertDialog(
             onDismissRequest = { editing = false },
             title = { Text(stringResource(R.string.snooze)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle)
+                    RowGroup {
+                        row { SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle, it) }
+                    }
                     SnoozeSteppers(shown, change)
                 }
             },
@@ -307,28 +386,24 @@ private fun SnoozeSteppers(shown: Snooze, onChange: (Snooze) -> Unit) {
 private enum class ToneChoice { Default, System, Current, Pick }
 
 @Composable
-fun TargetAppRow(packageName: String?, defaultPackage: String?, onChange: (String?) -> Unit) {
+fun TargetAppRow(packageName: String?, defaultPackage: String?, shapes: ListItemShapes, onChange: (String?) -> Unit) {
     val context = LocalContext.current
     var picking by remember { mutableStateOf(false) }
     val shown = packageName ?: defaultPackage
-    Row(
-        modifier = Modifier.fillMaxWidth().clickable { picking = true },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        val icon = remember(shown) { appIcon(context, shown) }
-        if (icon != null) Image(icon, contentDescription = null, modifier = Modifier.size(40.dp))
-        Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.target_app), style = MaterialTheme.typography.bodyLarge)
+    SegmentedListItem(
+        onClick = { picking = true },
+        shapes = shapes,
+        leadingContent = { ShapedIcon(RowIcon(R.drawable.ic_sports_esports, IconStyle.STOP)) },
+        supportingContent = {
             Text(
                 markDefault(appLabel(context, shown), isDefault = packageName == null && defaultPackage != null),
-                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
-        }
-    }
+        },
+    ) { Text(stringResource(R.string.target_app)) }
     if (picking) {
         AppPickerDialog(
+            selectedPackage = shown,
             defaultPackage = defaultPackage,
             onPick = {
                 picking = false

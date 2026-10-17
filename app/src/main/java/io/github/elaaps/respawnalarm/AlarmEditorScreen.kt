@@ -1,30 +1,42 @@
 package io.github.elaaps.respawnalarm
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItemShapes
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.time.LocalTime
@@ -42,6 +54,9 @@ fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
         return
     }
     val settings = remember { store.settings() }
+    var pickingTime by remember { mutableStateOf(false) }
+    val scroll = rememberScrollState()
+    val collapsed by remember { derivedStateOf { scroll.value > COLLAPSE_AFTER_PX } }
 
     fun update(updated: Alarm) {
         alarm = updated
@@ -49,82 +64,135 @@ fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
         AlarmScheduler.schedule(context)
     }
 
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+    val time = formatClockTime(context, LocalTime.of(current.hour, current.minute))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    AnimatedVisibility(collapsed, enter = fadeIn(), exit = fadeOut()) {
+                        Text(listOf(time, current.label).filter { it.isNotBlank() }.joinToString(" · "))
+                    }
+                },
+                navigationIcon = { BackButton(onBack) },
+                actions = {
+                    IconButton(onClick = {
+                        store.delete(current.id)
+                        AlarmScheduler.schedule(context)
+                        onBack()
+                    }) { Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_alarm)) }
+                },
+            )
+        },
+    ) { padding ->
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .safeDrawingPadding()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .verticalScroll(scroll)
+                .padding(start = 16.dp, end = 16.dp, bottom = padding.calculateBottomPadding() + 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ScreenHeader(stringResource(R.string.editor_title), onBack = onBack) {
-                HeaderAction(R.drawable.ic_delete, stringResource(R.string.delete_alarm)) {
-                    store.delete(current.id)
-                    AlarmScheduler.schedule(context)
-                    onBack()
-                }
+            TimePill(
+                time,
+                enabled = current.enabled,
+                canRing = settings.resolve(current).targetPackage != null,
+                onClick = { pickingTime = true },
+                onToggle = { update(current.copy(enabled = it)) },
+            )
+            DayPicker(current.days, { update(current.copy(days = it, skippedDate = null)) })
+            RowGroup {
+                row { shapes -> NameRow(current.label, shapes) { update(current.copy(label = it)) } }
+                if (current.enabled && !current.isOneShot) row { shapes -> SkipNextRow(current, shapes, ::update) }
             }
-            SectionCard(stringResource(R.string.section_alarm)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        formatClockTime(context, LocalTime.of(current.hour, current.minute)),
-                        style = MaterialTheme.typography.displayMedium,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable {
-                                pickTime(context, LocalTime.of(current.hour, current.minute)) {
-                                    update(current.copy(hour = it.hour, minute = it.minute, enabled = true, skippedDate = null))
-                                }
-                            },
-                    )
-                    Switch(
-                        checked = current.enabled,
-                        enabled = settings.resolve(current).targetPackage != null,
-                        onCheckedChange = { update(current.copy(enabled = it)) },
-                    )
-                }
-                DayPicker(current.days) { update(current.copy(days = it, skippedDate = null)) }
-                OutlinedTextField(
-                    value = current.label,
-                    onValueChange = { update(current.copy(label = it)) },
-                    label = { Text(stringResource(R.string.alarm_label)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                AnimatedVisibility(visible = current.enabled && !current.isOneShot) { SkipNextRow(current, ::update) }
-            }
-            OverridesCard(current, settings, ::update)
+            OverrideGroups(current, settings, ::update)
+        }
+    }
+
+    if (pickingTime) {
+        AlarmTimePicker(
+            LocalTime.of(current.hour, current.minute),
+            onPick = {
+                pickingTime = false
+                update(current.copy(hour = it.hour, minute = it.minute, enabled = true, skippedDate = null))
+            },
+            onDismiss = { pickingTime = false },
+        )
+    }
+}
+
+@Composable
+private fun TimePill(time: String, enabled: Boolean, canRing: Boolean, onClick: () -> Unit, onToggle: (Boolean) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(TIME_PILL_CORNER),
+        color = if (enabled) colors.primaryContainer else colors.surfaceContainerHigh,
+        contentColor = if (enabled) colors.onPrimaryContainer else colors.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(Modifier.padding(start = 28.dp, end = 20.dp, top = 14.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(time, style = MaterialTheme.typography.displayLarge, modifier = Modifier.weight(1f))
+            Switch(checked = enabled, onCheckedChange = onToggle, enabled = canRing)
         }
     }
 }
 
 @Composable
-private fun OverridesCard(alarm: Alarm, settings: GlobalSettings, onChange: (Alarm) -> Unit) {
-    SectionCard(stringResource(R.string.section_overrides)) {
-        TargetAppRow(alarm.targetPackage, settings.targetPackage) {
-            onChange(alarm.copy(targetPackage = it))
-        }
-        PlayTimeRow(alarm.durationSec, settings.durationSec) { onChange(alarm.copy(durationSec = it)) }
-        val resolved = settings.resolve(alarm)
-        ToneRow(
-            alarm.tone,
-            defaultTone = settings.tone,
-            soundEnabled = resolved.soundEnabled,
-            onSoundChange = { onChange(alarm.copy(soundEnabled = ownValue(it, settings.soundEnabled))) },
-        ) { onChange(alarm.copy(tone = it)) }
-        ChoiceRow(
-            stringResource(R.string.volume),
-            VolumeMode.entries.map { Choice(it, markDefault(volumeLabel(it), isDefault = it == settings.volume)) },
-            resolved.volume,
-            enabled = resolved.soundEnabled,
-        ) { onChange(alarm.copy(volume = ownValue(it, settings.volume))) }
-        VibrateRow(resolved) { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) }
-        SnoozeRow(alarm.snooze, defaultSnooze = settings.snooze) { onChange(alarm.copy(snooze = it)) }
+private fun NameRow(label: String, shapes: ListItemShapes, onChange: (String) -> Unit) {
+    SegmentedListItem(
+        shapes = shapes,
+        leadingContent = { ShapedIcon(RowIcon(R.drawable.ic_label, IconStyle.OTHER)) },
+        overlineContent = { Text(stringResource(R.string.alarm_label)) },
+    ) {
+        BasicTextField(
+            value = label,
+            onValueChange = onChange,
+            singleLine = true,
+            textStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
 @Composable
-private fun SkipNextRow(alarm: Alarm, onChange: (Alarm) -> Unit) {
+private fun OverrideGroups(alarm: Alarm, settings: GlobalSettings, onChange: (Alarm) -> Unit) {
+    val resolved = settings.resolve(alarm)
+    RowGroup(stringResource(R.string.section_overrides)) {
+        row { shapes ->
+            TargetAppRow(alarm.targetPackage, settings.targetPackage, shapes) { onChange(alarm.copy(targetPackage = it)) }
+        }
+        row { shapes ->
+            PlayTimeRow(alarm.durationSec, settings.durationSec, shapes) { onChange(alarm.copy(durationSec = it)) }
+        }
+    }
+    RowGroup {
+        row { shapes ->
+            ToneRow(
+                alarm.tone,
+                defaultTone = settings.tone,
+                soundEnabled = resolved.soundEnabled,
+                shapes = shapes,
+                onSoundChange = { onChange(alarm.copy(soundEnabled = ownValue(it, settings.soundEnabled))) },
+            ) { onChange(alarm.copy(tone = it)) }
+        }
+        row { shapes ->
+            ChoiceRow(
+                stringResource(R.string.volume),
+                VolumeMode.entries.map { Choice(it, markDefault(volumeLabel(it), isDefault = it == settings.volume)) },
+                resolved.volume,
+                shapes,
+                RowIcon(R.drawable.ic_volume_up, IconStyle.RINGING),
+                enabled = resolved.soundEnabled,
+            ) { onChange(alarm.copy(volume = ownValue(it, settings.volume))) }
+        }
+        row { shapes -> VibrateRow(resolved, shapes) { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) } }
+        row { shapes -> SnoozeRow(alarm.snooze, defaultSnooze = settings.snooze, shapes) { onChange(alarm.copy(snooze = it)) } }
+    }
+}
+
+@Composable
+private fun SkipNextRow(alarm: Alarm, shapes: ListItemShapes, onChange: (Alarm) -> Unit) {
     val now = ZonedDateTime.now()
     val unskipped = alarm.copy(skippedDate = null)
     val nextDate = nextRing(unskipped, now)?.toLocalDate() ?: return
@@ -134,6 +202,11 @@ private fun SkipNextRow(alarm: Alarm, onChange: (Alarm) -> Unit) {
         stringResource(R.string.skip_next),
         checked = skippedDate != null,
         onChange = { onChange(if (it) alarm.copy(skippedDate = nextDate) else unskipped) },
+        shapes = shapes,
+        icon = RowIcon(R.drawable.ic_event_busy, IconStyle.OTHER),
         description = (skippedDate ?: nextDate).format(pattern),
     )
 }
+
+private const val COLLAPSE_AFTER_PX = 200
+private val TIME_PILL_CORNER = 40.dp

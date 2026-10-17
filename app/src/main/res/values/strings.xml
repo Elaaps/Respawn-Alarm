@@ -52,6 +52,10 @@
     <string name="home_no_alarm">No alarm set</string>
     <string name="home_next_alarm">Alarm in %1$d h %2$d min</string>
     <string name="home_next_alarm_days">Alarm in %1$d d %2$d h</string>
+    <string name="countdown_hours">%1$dh %2$02d</string>
+    <string name="countdown_days">%1$dd %2$dh</string>
+    <string name="countdown_caption">until the next alarm</string>
+    <string name="home_empty">Tap + to create one. It only stops when you play.</string>
     <string name="home_next_alarm_at">%1$s at %2$s</string>
     <string name="action_add_alarm">Add an alarm</string>
     <string name="action_delete_all">Delete all alarms</string>
@@ -87,15 +91,13 @@
     <string name="diag_step_text">Start the diagnostic, open your game, play for a few seconds, then pull down the notification shade: the touch count must go up. Otherwise, the alarm can never be stopped.</string>
     <string name="diag_step_button">Start the diagnostic</string>
 
-    <string name="editor_title">Edit alarm</string>
     <string name="delete_alarm">Delete this alarm</string>
-    <string name="alarm_label">Label</string>
+    <string name="alarm_label">Alarm name</string>
     <string name="section_overrides">Settings of this alarm</string>
     <string name="skip_next">Skip the next ring</string>
 
     <string name="settings_title">Settings</string>
 
-    <string name="section_alarm">Alarm</string>
     <string-array name="day_letters">
         <item>M</item>
         <item>T</item>

@@ -52,6 +52,10 @@
     <string name="home_no_alarm">Aucune alarme</string>
     <string name="home_next_alarm">Alarme dans %1$d h %2$d min</string>
     <string name="home_next_alarm_days">Alarme dans %1$d j %2$d h</string>
+    <string name="countdown_hours">%1$d h %2$02d</string>
+    <string name="countdown_days">%1$d j %2$d h</string>
+    <string name="countdown_caption">avant la prochaine alarme</string>
+    <string name="home_empty">Touche + pour en créer une. Elle ne s\'arrêtera qu\'en jouant.</string>
     <string name="home_next_alarm_at">%1$s à %2$s</string>
     <string name="action_add_alarm">Ajouter une alarme</string>
     <string name="action_delete_all">Supprimer toutes les alarmes</string>
@@ -88,15 +92,13 @@
     <string name="diag_step_text">Lance le diagnostic, ouvre ton jeu, joue quelques secondes, puis tire le volet des notifications : le nombre d\'appuis doit augmenter. Sinon, l\'alarme ne pourra jamais être arrêtée.</string>
     <string name="diag_step_button">Lancer le diagnostic</string>
 
-    <string name="editor_title">Modifier l\'alarme</string>
     <string name="delete_alarm">Supprimer cette alarme</string>
-    <string name="alarm_label">Libellé</string>
+    <string name="alarm_label">Nom de l\'alarme</string>
     <string name="section_overrides">Réglages de cette alarme</string>
     <string name="skip_next">Sauter la prochaine sonnerie</string>
 
     <string name="settings_title">Paramètres</string>
 
-    <string name="section_alarm">Alarme</string>
     <string-array name="day_letters">
         <item>L</item>
         <item>M</item>

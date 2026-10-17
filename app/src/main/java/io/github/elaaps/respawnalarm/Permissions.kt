@@ -12,16 +12,21 @@ import android.content.pm.PackageManager
 import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 
-enum class Permission(@param:StringRes val title: Int, @param:StringRes val description: Int) {
-    NOTIFICATIONS(R.string.perm_notifications_title, R.string.perm_notifications_desc),
-    USAGE_ACCESS(R.string.perm_usage_title, R.string.perm_usage_desc),
-    OVERLAY(R.string.perm_overlay_title, R.string.perm_overlay_desc),
-    FULL_SCREEN(R.string.perm_full_screen_title, R.string.perm_full_screen_desc),
-    BATTERY(R.string.perm_battery_title, R.string.perm_battery_desc),
-    EXACT_ALARM(R.string.perm_exact_alarm_title, R.string.perm_exact_alarm_desc),
+enum class Permission(
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int,
+    @param:DrawableRes val icon: Int,
+) {
+    NOTIFICATIONS(R.string.perm_notifications_title, R.string.perm_notifications_desc, R.drawable.ic_notifications),
+    USAGE_ACCESS(R.string.perm_usage_title, R.string.perm_usage_desc, R.drawable.ic_query_stats),
+    OVERLAY(R.string.perm_overlay_title, R.string.perm_overlay_desc, R.drawable.ic_layers),
+    FULL_SCREEN(R.string.perm_full_screen_title, R.string.perm_full_screen_desc, R.drawable.ic_fullscreen),
+    BATTERY(R.string.perm_battery_title, R.string.perm_battery_desc, R.drawable.ic_battery_alert),
+    EXACT_ALARM(R.string.perm_exact_alarm_title, R.string.perm_exact_alarm_desc, R.drawable.ic_alarm),
 }
 
 object Permissions {
