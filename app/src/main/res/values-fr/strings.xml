@@ -151,6 +151,7 @@
     <string name="tone_picker_title">Son d\'alarme</string>
     <string name="tone_pick">Choisir un son…</string>
     <string name="vibrate">Vibreur</string>
+    <string name="vibrate_forced">Toujours activé quand le son est coupé</string>
     <string name="volume">Volume</string>
     <string name="volume_phone">Volume du téléphone</string>
     <string name="volume_max">Maximum</string>

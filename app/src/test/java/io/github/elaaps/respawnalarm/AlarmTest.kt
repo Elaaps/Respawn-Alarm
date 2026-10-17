@@ -64,6 +64,7 @@ class AlarmTest {
                 targetPackage = "com.example.game",
                 durationSec = 120,
                 inactivitySec = 10,
+                soundEnabled = true,
                 tone = Tone.Custom("content://tone"),
                 vibrate = false,
                 volume = VolumeMode.PHONE,
@@ -73,6 +74,25 @@ class AlarmTest {
             ),
             resolved,
         )
+    }
+
+    @Test
+    fun `resolve, with the sound turned off by the alarm, vibrates even when vibration is off`() {
+        val defaults = GlobalSettings(vibrate = false)
+        val alarm = Alarm(id = 4, hour = 7, minute = 0, soundEnabled = false)
+
+        val resolved = defaults.resolve(alarm)
+
+        assertEquals(listOf(false, true), listOf(resolved.soundEnabled, resolved.vibrate))
+    }
+
+    @Test
+    fun `resolveDefaults, with the sound turned off, vibrates even when vibration is off`() {
+        val defaults = GlobalSettings(soundEnabled = false, vibrate = false)
+
+        val resolved = defaults.resolveDefaults()
+
+        assertTrue(resolved.vibrate)
     }
 
     @Test

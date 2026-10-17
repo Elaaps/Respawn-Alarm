@@ -21,6 +21,7 @@ fun encodeSettings(settings: GlobalSettings): String = JSONObject().apply {
     putOpt(KEY_TARGET, settings.targetPackage)
     put(KEY_DURATION, settings.durationSec)
     put(KEY_INACTIVITY, settings.inactivitySec)
+    put(KEY_SOUND, settings.soundEnabled)
     put(KEY_TONE, toneToJson(settings.tone))
     put(KEY_VIBRATE, settings.vibrate)
     put(KEY_VOLUME, settings.volume.name)
@@ -44,6 +45,7 @@ fun decodeSettings(json: String): GlobalSettings {
         durationSec = obj.intOrNull(KEY_DURATION)?.takeIf { it in GlobalSettings.DURATION_RANGE_SEC } ?: defaults.durationSec,
         inactivitySec = obj.intOrNull(KEY_INACTIVITY)?.takeIf { it in GlobalSettings.INACTIVITY_RANGE_SEC }
             ?: defaults.inactivitySec,
+        soundEnabled = obj.optBoolean(KEY_SOUND, defaults.soundEnabled),
         tone = obj.optJSONObject(KEY_TONE)?.let(::toneFromJson) ?: defaults.tone,
         vibrate = obj.optBoolean(KEY_VIBRATE, defaults.vibrate),
         volume = obj.volumeOrNull() ?: defaults.volume,
@@ -72,6 +74,7 @@ private fun alarmToJson(alarm: Alarm): JSONObject = JSONObject().apply {
     putOpt(KEY_SKIPPED, alarm.skippedDate?.toString())
     putOpt(KEY_TARGET, alarm.targetPackage)
     putOpt(KEY_DURATION, alarm.durationSec)
+    putOpt(KEY_SOUND, alarm.soundEnabled)
     putOpt(KEY_TONE, alarm.tone?.let(::toneToJson))
     putOpt(KEY_VIBRATE, alarm.vibrate)
     putOpt(KEY_VOLUME, alarm.volume?.name)
@@ -89,6 +92,7 @@ private fun alarmFromJson(obj: JSONObject): Alarm? = try {
         skippedDate = obj.stringOrNull(KEY_SKIPPED)?.let(::dateOrNull),
         targetPackage = obj.stringOrNull(KEY_TARGET),
         durationSec = obj.intOrNull(KEY_DURATION)?.takeIf { it in GlobalSettings.DURATION_RANGE_SEC },
+        soundEnabled = if (obj.isNull(KEY_SOUND)) null else obj.optBoolean(KEY_SOUND),
         tone = obj.optJSONObject(KEY_TONE)?.let(::toneFromJson),
         vibrate = if (obj.isNull(KEY_VIBRATE)) null else obj.optBoolean(KEY_VIBRATE),
         volume = obj.volumeOrNull(),
@@ -148,6 +152,7 @@ private const val KEY_SKIPPED = "skipped_date"
 private const val KEY_TARGET = "target_package"
 private const val KEY_DURATION = "duration_sec"
 private const val KEY_INACTIVITY = "inactivity_sec"
+private const val KEY_SOUND = "sound_enabled"
 private const val KEY_TONE = "tone"
 private const val KEY_TYPE = "type"
 private const val KEY_URI = "uri"

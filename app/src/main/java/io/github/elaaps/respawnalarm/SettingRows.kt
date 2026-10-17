@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalContext
@@ -39,11 +40,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 
 @Composable
-fun ValueRow(label: String, value: String, onClick: () -> Unit) {
+fun ValueRow(label: String, value: String, enabled: Boolean = true, onClick: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
+            .alpha(contentAlpha(enabled))
             .padding(vertical = 4.dp),
     ) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
@@ -52,7 +54,14 @@ fun ValueRow(label: String, value: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit, description: String? = null, enabled: Boolean = true) {
+fun SwitchRow(
+    label: String,
+    checked: Boolean,
+    onChange: (Boolean) -> Unit,
+    description: String? = null,
+    enabled: Boolean = true,
+    greyedOut: Boolean = !enabled,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,7 +70,7 @@ fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit, desc
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f).alpha(contentAlpha(enabled = !greyedOut))) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             if (description != null) {
                 Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -91,37 +100,59 @@ fun SwitchWithDetailsRow(label: String, summary: String, checked: Boolean, onCha
 
 private val DETAILS_DIVIDER_HEIGHT = 32.dp
 
+private fun contentAlpha(enabled: Boolean): Float = if (enabled) 1f else DISABLED_CONTENT_ALPHA
+
+private const val DISABLED_CONTENT_ALPHA = 0.38f
+
+@Composable
+fun VibrateRow(alarm: ResolvedAlarm, onChange: (Boolean) -> Unit) {
+    SwitchRow(
+        stringResource(R.string.vibrate),
+        alarm.vibrate,
+        onChange,
+        description = if (alarm.soundEnabled) null else stringResource(R.string.vibrate_forced),
+        enabled = alarm.soundEnabled,
+        greyedOut = false,
+    )
+}
+
 data class Choice<T>(val value: T, val label: String)
 
 @Composable
-fun <T> ChoiceRow(label: String, choices: List<Choice<T>>, selected: T, onSelect: (T) -> Unit) {
+fun <T> ChoiceRow(label: String, choices: List<Choice<T>>, selected: T, enabled: Boolean = true, onSelect: (T) -> Unit) {
     var choosing by remember { mutableStateOf(false) }
-    ValueRow(label, choices.firstOrNull { it.value == selected }?.label.orEmpty()) { choosing = true }
-    if (choosing) {
-        AlertDialog(
-            onDismissRequest = { choosing = false },
-            title = { Text(label) },
-            text = {
-                Column {
-                    choices.forEach { choice ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    choosing = false
-                                    onSelect(choice.value)
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = choice.value == selected, onClick = null)
-                            Text(choice.label, modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 12.dp))
-                        }
+    ValueRow(label, selectedLabel(choices, selected), enabled) { choosing = true }
+    if (choosing) ChoiceDialog(label, choices, selected, onSelect) { choosing = false }
+}
+
+private fun <T> selectedLabel(choices: List<Choice<T>>, selected: T): String =
+    choices.firstOrNull { it.value == selected }?.label.orEmpty()
+
+@Composable
+private fun <T> ChoiceDialog(label: String, choices: List<Choice<T>>, selected: T, onSelect: (T) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(label) },
+        text = {
+            Column {
+                choices.forEach { choice ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onDismiss()
+                                onSelect(choice.value)
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = choice.value == selected, onClick = null)
+                        Text(choice.label, modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 12.dp))
                     }
                 }
-            },
-            confirmButton = { TextButton(onClick = { choosing = false }) { Text(stringResource(R.string.cancel)) } },
-        )
-    }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable
@@ -162,8 +193,15 @@ private fun toneOf(uri: Uri): Tone =
     if (uri == RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)) Tone.SystemDefault else Tone.Custom(uri.toString())
 
 @Composable
-fun ToneRow(tone: Tone?, defaultTone: Tone?, onChange: (Tone?) -> Unit) {
+fun ToneRow(
+    tone: Tone?,
+    defaultTone: Tone?,
+    soundEnabled: Boolean,
+    onSoundChange: (Boolean) -> Unit,
+    onChange: (Tone?) -> Unit,
+) {
     val context = LocalContext.current
+    var choosing by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(PickAlarmTone()) { uri -> uri?.let { onChange(ownValue(toneOf(it), defaultTone)) } }
     val current = tone ?: defaultTone ?: Tone.SystemDefault
     val customDefault = defaultTone as? Tone.Custom
@@ -180,13 +218,17 @@ fun ToneRow(tone: Tone?, defaultTone: Tone?, onChange: (Tone?) -> Unit) {
         customDefault -> ToneChoice.Default
         else -> ToneChoice.Current
     }
-    ChoiceRow(stringResource(R.string.tone), choices, selected) { choice ->
-        when (choice) {
-            ToneChoice.Default -> onChange(null)
-            ToneChoice.System -> onChange(ownValue(Tone.SystemDefault, defaultTone))
-            ToneChoice.Current -> Unit
-            ToneChoice.Pick -> picker.launch((current as? Tone.Custom)?.uri?.toUri())
-        }
+    val label = stringResource(R.string.tone)
+    SwitchWithDetailsRow(label, selectedLabel(choices, selected), soundEnabled, onSoundChange) { choosing = true }
+    if (choosing) {
+        ChoiceDialog(label, choices, selected, onDismiss = { choosing = false }, onSelect = { choice ->
+            when (choice) {
+                ToneChoice.Default -> onChange(null)
+                ToneChoice.System -> onChange(ownValue(Tone.SystemDefault, defaultTone))
+                ToneChoice.Current -> Unit
+                ToneChoice.Pick -> picker.launch((current as? Tone.Custom)?.uri?.toUri())
+            }
+        })
     }
 }
 

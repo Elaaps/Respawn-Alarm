@@ -105,17 +105,20 @@ private fun OverridesCard(alarm: Alarm, settings: GlobalSettings, onChange: (Ala
             onChange(alarm.copy(targetPackage = it))
         }
         PlayTimeRow(alarm.durationSec, settings.durationSec) { onChange(alarm.copy(durationSec = it)) }
-        ToneRow(alarm.tone, defaultTone = settings.tone) { onChange(alarm.copy(tone = it)) }
+        val resolved = settings.resolve(alarm)
+        ToneRow(
+            alarm.tone,
+            defaultTone = settings.tone,
+            soundEnabled = resolved.soundEnabled,
+            onSoundChange = { onChange(alarm.copy(soundEnabled = ownValue(it, settings.soundEnabled))) },
+        ) { onChange(alarm.copy(tone = it)) }
         ChoiceRow(
             stringResource(R.string.volume),
             VolumeMode.entries.map { Choice(it, markDefault(volumeLabel(it), isDefault = it == settings.volume)) },
-            alarm.volume ?: settings.volume,
+            resolved.volume,
+            enabled = resolved.soundEnabled,
         ) { onChange(alarm.copy(volume = ownValue(it, settings.volume))) }
-        SwitchRow(
-            stringResource(R.string.vibrate),
-            alarm.vibrate ?: settings.vibrate,
-            { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) },
-        )
+        VibrateRow(resolved) { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) }
         SnoozeRow(alarm.snooze, defaultSnooze = settings.snooze) { onChange(alarm.copy(snooze = it)) }
     }
 }

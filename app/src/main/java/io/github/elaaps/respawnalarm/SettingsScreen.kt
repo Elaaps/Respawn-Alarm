@@ -115,19 +115,27 @@ private fun OverlayCard(settings: GlobalSettings, onChange: (GlobalSettings) -> 
 @Composable
 private fun SoundCard(settings: GlobalSettings, onChange: (GlobalSettings) -> Unit) {
     SectionCard(stringResource(R.string.section_sound)) {
-        ToneRow(settings.tone, defaultTone = null) { tone -> tone?.let { onChange(settings.copy(tone = it)) } }
+        val resolved = settings.resolveDefaults()
+        ToneRow(
+            settings.tone,
+            defaultTone = null,
+            soundEnabled = settings.soundEnabled,
+            onSoundChange = { onChange(settings.copy(soundEnabled = it)) },
+        ) { tone -> tone?.let { onChange(settings.copy(tone = it)) } }
         ChoiceRow(
             stringResource(R.string.volume),
             VolumeMode.entries.map { Choice(it, volumeLabel(it)) },
             settings.volume,
+            enabled = settings.soundEnabled,
         ) { onChange(settings.copy(volume = it)) }
         SwitchRow(
             stringResource(R.string.crescendo),
             settings.crescendo,
             { onChange(settings.copy(crescendo = it)) },
             description = stringResource(R.string.crescendo_desc),
+            enabled = settings.soundEnabled,
         )
-        SwitchRow(stringResource(R.string.vibrate), settings.vibrate, { onChange(settings.copy(vibrate = it)) })
+        VibrateRow(resolved) { onChange(settings.copy(vibrate = it)) }
         SnoozeRow(settings.snooze, defaultSnooze = null) { snooze -> snooze?.let { onChange(settings.copy(snooze = it)) } }
     }
 }

@@ -36,6 +36,17 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
 
     fun play() {
         if (isPlaying) return
+        if (alarm.soundEnabled) startSound()
+        if (alarm.vibrate) {
+            vibrator.vibrate(
+                VibrationEffect.createWaveform(longArrayOf(0, 800, 600), 0),
+                VibrationAttributes.createForUsage(VibrationAttributes.USAGE_ALARM),
+            )
+        }
+        isPlaying = true
+    }
+
+    private fun startSound() {
         if (alarm.volume == VolumeMode.MAX) forceVolume()
         val current = player ?: createPlayer()?.also { player = it }
         startedAt = SystemClock.elapsedRealtime()
@@ -44,13 +55,6 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
             handler.post(fadeIn)
         }
         current?.let { startQuietly(it) }
-        if (alarm.vibrate) {
-            vibrator.vibrate(
-                VibrationEffect.createWaveform(longArrayOf(0, 800, 600), 0),
-                VibrationAttributes.createForUsage(VibrationAttributes.USAGE_ALARM),
-            )
-        }
-        isPlaying = true
     }
 
     fun pause() {

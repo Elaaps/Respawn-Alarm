@@ -44,6 +44,7 @@ data class Alarm(
     val skippedDate: LocalDate? = null,
     val targetPackage: String? = null,
     val durationSec: Int? = null,
+    val soundEnabled: Boolean? = null,
     val tone: Tone? = null,
     val vibrate: Boolean? = null,
     val volume: VolumeMode? = null,
@@ -70,6 +71,7 @@ data class GlobalSettings(
     val targetPackage: String? = null,
     val durationSec: Int = 300,
     val inactivitySec: Int = 10,
+    val soundEnabled: Boolean = true,
     val tone: Tone = Tone.SystemDefault,
     val vibrate: Boolean = true,
     val volume: VolumeMode = VolumeMode.MAX,
@@ -99,8 +101,9 @@ data class GlobalSettings(
         targetPackage = alarm.targetPackage ?: targetPackage,
         durationSec = alarm.durationSec ?: durationSec,
         inactivitySec = inactivitySec,
+        soundEnabled = alarm.soundEnabled ?: soundEnabled,
         tone = alarm.tone ?: tone,
-        vibrate = alarm.vibrate ?: vibrate,
+        vibrate = vibrates(alarm.vibrate ?: vibrate, alarm.soundEnabled ?: soundEnabled),
         volume = alarm.volume ?: volume,
         crescendo = crescendo,
         snooze = alarm.snooze ?: snooze,
@@ -113,8 +116,9 @@ data class GlobalSettings(
         targetPackage = targetPackage,
         durationSec = durationSec,
         inactivitySec = inactivitySec,
+        soundEnabled = soundEnabled,
         tone = tone,
-        vibrate = vibrate,
+        vibrate = vibrates(vibrate, soundEnabled),
         volume = volume,
         crescendo = crescendo,
         snooze = snooze,
@@ -122,6 +126,8 @@ data class GlobalSettings(
     )
 
     private val effectiveLoadingGraceSec: Int get() = if (loadingGraceEnabled) loadingGraceSec else 0
+
+    private fun vibrates(vibrate: Boolean, soundEnabled: Boolean): Boolean = vibrate || !soundEnabled
 
     companion object {
         val DURATION_RANGE_SEC = 30..3600
@@ -145,6 +151,7 @@ data class ResolvedAlarm(
     val targetPackage: String?,
     val durationSec: Int,
     val inactivitySec: Int,
+    val soundEnabled: Boolean,
     val tone: Tone,
     val vibrate: Boolean,
     val volume: VolumeMode,

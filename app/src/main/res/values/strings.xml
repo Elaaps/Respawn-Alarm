@@ -150,6 +150,7 @@
     <string name="tone_picker_title">Alarm sound</string>
     <string name="tone_pick">Choose a sound…</string>
     <string name="vibrate">Vibration</string>
+    <string name="vibrate_forced">Always on while the sound is off</string>
     <string name="volume">Volume</string>
     <string name="volume_phone">Phone volume</string>
     <string name="volume_max">Maximum</string>
