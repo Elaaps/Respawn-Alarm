@@ -85,6 +85,7 @@ class SettingsJsonTest {
             overlayEnabled = false,
             overlayStyle = OverlayStyle.TIMER,
             victoryOnLeave = false,
+            emergencyStopEnabled = false,
             upcomingNoticeHours = 10,
         )
 

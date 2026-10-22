@@ -52,6 +52,7 @@ class RingingActivity : ComponentActivity() {
         val store = AlarmStore(this)
         val ringingAlarmId = store.ringingAlarmId
         val alarm = store.resolve(ringingAlarmId)
+        val emergencyStopEnabled = store.settings().emergencyStopEnabled
         var restarting = intent.getBooleanExtra(EXTRA_RESTART_ALARM, false) &&
             SessionService.state.value == null
         if (restarting) SessionService.start(this, SessionService.Mode.ALARM, ringingAlarmId)
@@ -74,7 +75,7 @@ class RingingActivity : ComponentActivity() {
                     snoozesLeft = state?.snoozesLeft ?: 0,
                     onLaunch = { launchTarget(alarm.targetPackage) },
                     onSnooze = ::snooze,
-                    onEmergency = ::requestEmergencyStop,
+                    onEmergency = if (emergencyStopEnabled) ::requestEmergencyStop else null,
                 )
                 if (confirmingEmergency) {
                     AlertDialog(
@@ -155,7 +156,7 @@ private fun RingingScreen(
     snoozesLeft: Int,
     onLaunch: () -> Unit,
     onSnooze: () -> Unit,
-    onEmergency: () -> Unit,
+    onEmergency: (() -> Unit)?,
 ) {
     val now by produceState(LocalTime.now()) {
         while (true) {
@@ -165,8 +166,10 @@ private fun RingingScreen(
     }
     BossBackground {
         Box(Modifier.fillMaxSize().safeDrawingPadding()) {
-            IconButton(onClick = onEmergency, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                Icon(painterResource(R.drawable.ic_support), contentDescription = stringResource(R.string.action_emergency), tint = BossColors.Lilac)
+            if (onEmergency != null) {
+                IconButton(onClick = onEmergency, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
+                    Icon(painterResource(R.drawable.ic_support), contentDescription = stringResource(R.string.action_emergency), tint = BossColors.Lilac)
+                }
             }
             Column(
                 modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 28.dp),

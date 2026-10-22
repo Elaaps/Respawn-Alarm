@@ -32,6 +32,7 @@ fun encodeSettings(settings: GlobalSettings): String = JSONObject().apply {
     put(KEY_OVERLAY, settings.overlayEnabled)
     put(KEY_OVERLAY_STYLE, settings.overlayStyle.name)
     put(KEY_VICTORY_ON_LEAVE, settings.victoryOnLeave)
+    put(KEY_EMERGENCY_STOP, settings.emergencyStopEnabled)
     putOpt(KEY_UPCOMING, settings.upcomingNoticeHours)
 }.toString()
 
@@ -60,6 +61,7 @@ fun decodeSettings(json: String): GlobalSettings {
         overlayStyle = obj.stringOrNull(KEY_OVERLAY_STYLE)?.let { name -> OverlayStyle.entries.firstOrNull { it.name == name } }
             ?: defaults.overlayStyle,
         victoryOnLeave = obj.optBoolean(KEY_VICTORY_ON_LEAVE, defaults.victoryOnLeave),
+        emergencyStopEnabled = obj.optBoolean(KEY_EMERGENCY_STOP, defaults.emergencyStopEnabled),
         upcomingNoticeHours = if (obj.has(KEY_UPCOMING)) {
             obj.intOrNull(KEY_UPCOMING)?.takeIf { it in GlobalSettings.UPCOMING_NOTICE_RANGE_HOURS }
                 ?: defaults.upcomingNoticeHours
@@ -172,6 +174,7 @@ private const val LEGACY_SNOOZE_OFF_COUNT = 0
 private const val KEY_OVERLAY = "overlay"
 private const val KEY_OVERLAY_STYLE = "overlay_style"
 private const val KEY_VICTORY_ON_LEAVE = "victory_on_leave"
+private const val KEY_EMERGENCY_STOP = "emergency_stop_enabled"
 private const val KEY_LOADING_GRACE = "loading_grace_sec"
 private const val KEY_LOADING_GRACE_ENABLED = "loading_grace_enabled"
 private const val KEY_UPCOMING = "upcoming_notice_hours"

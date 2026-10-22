@@ -139,6 +139,8 @@
     <string name="force_stop_guard">Prevent force stop</string>
     <string name="force_stop_guard_desc">Makes Respawn Alarm a device admin app.</string>
     <string name="force_stop_guard_explanation">Needed to prevent force stopping Respawn Alarm.</string>
+    <string name="emergency_stop_enabled">Emergency stop</string>
+    <string name="emergency_stop_enabled_desc">Stops the alarm with the screen lock, without playing.</string>
     <string name="section_permissions">Permissions</string>
     <string name="all_granted">Everything is allowed.</string>
     <string name="grant">Allow</string>

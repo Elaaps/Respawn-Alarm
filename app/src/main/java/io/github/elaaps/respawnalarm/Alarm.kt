@@ -88,6 +88,7 @@ data class GlobalSettings(
     val overlayEnabled: Boolean = true,
     val overlayStyle: OverlayStyle = OverlayStyle.HEALTH_BAR,
     val victoryOnLeave: Boolean = true,
+    val emergencyStopEnabled: Boolean = true,
     val upcomingNoticeHours: Int? = DEFAULT_UPCOMING_NOTICE_HOURS,
 ) {
     init {

@@ -138,6 +138,8 @@
     <string name="force_stop_guard">Empêcher l\'arrêt forcé</string>
     <string name="force_stop_guard_desc">Fait de Respawn Alarm une appli d\'administration de l\'appareil.</string>
     <string name="force_stop_guard_explanation">Nécessaire pour empêcher l\'arrêt forcé de Respawn Alarm.</string>
+    <string name="emergency_stop_enabled">Arrêt d\'urgence</string>
+    <string name="emergency_stop_enabled_desc">Arrête l\'alarme avec le verrouillage de l\'écran, sans jouer.</string>
     <string name="section_permissions">Autorisations</string>
     <string name="all_granted">Tout est autorisé.</string>
     <string name="grant">Autoriser</string>

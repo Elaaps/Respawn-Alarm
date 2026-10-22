@@ -79,7 +79,7 @@ fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
             RingingGroup(settings, ::update)
             OverlayGroup(settings, ::update, onResetPosition = store::resetOverlayPosition)
             VictoryGroup(settings, ::update)
-            ProtectionGroup(resumeCount)
+            ProtectionGroup(settings, ::update, resumeCount)
             PermissionsGroup(resumeCount, onSetup)
             TestGroup(settings)
         }
@@ -251,7 +251,7 @@ private fun stepInactivity(settings: GlobalSettings, deltaSec: Int): Int =
     (settings.inactivitySec + deltaSec).coerceIn(INACTIVITY_RANGE_SEC)
 
 @Composable
-private fun ProtectionGroup(resumeCount: Int) {
+private fun ProtectionGroup(settings: GlobalSettings, onChange: (GlobalSettings) -> Unit, resumeCount: Int) {
     val context = LocalContext.current
     val state by SessionService.state.collectAsStateWithLifecycle()
     var active by remember(resumeCount) { mutableStateOf(ForceStopGuard.isActive(context)) }
@@ -276,6 +276,17 @@ private fun ProtectionGroup(resumeCount: Int) {
                 shapes,
                 RowIcon(R.drawable.ic_shield_lock, IconStyle.OTHER),
                 description = stringResource(R.string.force_stop_guard_desc),
+                enabled = state?.mode != SessionService.Mode.ALARM,
+            )
+        }
+        row { shapes ->
+            SwitchRow(
+                stringResource(R.string.emergency_stop_enabled),
+                settings.emergencyStopEnabled,
+                { onChange(settings.copy(emergencyStopEnabled = it)) },
+                shapes,
+                RowIcon(R.drawable.ic_support, IconStyle.OTHER),
+                description = stringResource(R.string.emergency_stop_enabled_desc),
                 enabled = state?.mode != SessionService.Mode.ALARM,
             )
         }
