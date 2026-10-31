@@ -26,6 +26,9 @@ class Notifications(private val context: Context) {
             NotificationChannel(CHANNEL_INFO, context.getString(R.string.channel_info), NotificationManager.IMPORTANCE_LOW),
         )
         manager.createNotificationChannel(
+            NotificationChannel(CHANNEL_WARNINGS, context.getString(R.string.channel_warnings), NotificationManager.IMPORTANCE_DEFAULT),
+        )
+        manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_UPCOMING,
                 context.getString(R.string.channel_upcoming),
@@ -162,6 +165,26 @@ class Notifications(private val context: Context) {
         manager.notify(ID_DONE, notification)
     }
 
+    fun fullScreenRevoked() {
+        val intent = Permissions.settingsIntent(context, Permission.FULL_SCREEN) ?: return
+        val open = PendingIntent.getActivity(
+            context,
+            REQUEST_FULL_SCREEN,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val text = context.getString(R.string.notif_full_screen_revoked_text)
+        val notification = Notification.Builder(context, CHANNEL_WARNINGS)
+            .setSmallIcon(R.drawable.ic_stat_alarm)
+            .setContentTitle(context.getString(R.string.notif_full_screen_revoked_title))
+            .setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(ID_FULL_SCREEN, notification)
+    }
+
     fun upcoming(next: ScheduledAlarm) {
         val ringAtMs = next.at.toInstant().toEpochMilli()
         val untilRingMs = ringAtMs - System.currentTimeMillis()
@@ -241,15 +264,18 @@ class Notifications(private val context: Context) {
         const val ID_SESSION = 1
         private const val ID_DONE = 2
         private const val ID_UPCOMING = 3
+        private const val ID_FULL_SCREEN = 4
         private const val CHANNEL_UPCOMING = "upcoming"
         private const val REQUEST_MAIN = 5
         private const val CHANNEL_ALARM = "alarm"
         private const val CHANNEL_INFO = "info"
+        private const val CHANNEL_WARNINGS = "warnings"
         private const val REQUEST_RINGING = 1
         private const val REQUEST_LAUNCH = 2
         private const val REQUEST_RESTART = 3
         private const val REQUEST_SNOOZE = 4
         private const val REQUEST_VICTORY = 6
+        private const val REQUEST_FULL_SCREEN = 7
         private const val DONE_TIMEOUT_MS = 30 * 60 * 1000L
         private const val MILLIS_PER_SECOND = 1_000L
     }

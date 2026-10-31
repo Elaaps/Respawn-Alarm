@@ -206,6 +206,9 @@
     <string name="overlay_reset">Reset position</string>
 
     <string name="channel_upcoming">Upcoming alarms</string>
+    <string name="channel_warnings">Warnings</string>
+    <string name="notif_full_screen_revoked_title">Full screen notifications turned off</string>
+    <string name="notif_full_screen_revoked_text">The update turned them off, so the alarm will not show on the lock screen. Tap to turn them back on.</string>
     <string name="notif_upcoming_title">Alarm at %1$s</string>
     <string name="action_skip">Skip</string>
 

@@ -7,6 +7,9 @@ import android.content.Intent
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action in ACTIONS) AlarmScheduler.schedule(context)
+        // The system package installer denies full screen notifications on every sideloaded update.
+        val fullScreenRevoked = !Permissions.isGranted(context, Permission.FULL_SCREEN)
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED && fullScreenRevoked) Notifications(context).fullScreenRevoked()
     }
 
     private companion object {
