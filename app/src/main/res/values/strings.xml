@@ -70,6 +70,8 @@
     <string name="emergency_title">Stop the alarm without playing?</string>
     <string name="emergency_subtitle">Use your screen lock</string>
     <string name="emergency_confirm">Stop</string>
+    <string name="emergency_code_prompt">Type this code to stop the alarm</string>
+    <string name="emergency_code_field">Code</string>
     <string name="notif_emergency_title">Alarm stopped without playing</string>
 
     <string name="home_no_alarm">No alarm set</string>
@@ -147,6 +149,11 @@
     <string name="force_stop_guard_explanation">Needed to prevent force stopping Respawn Alarm.</string>
     <string name="emergency_stop_enabled">Emergency stop</string>
     <string name="emergency_stop_enabled_desc">Stops the alarm with the screen lock, without playing.</string>
+    <string name="emergency_stop_code">Type a code</string>
+    <string name="emergency_stop_code_desc">Copy a random code before stopping.</string>
+    <string name="emergency_stop_delay">Waiting time</string>
+    <string name="emergency_stop_delay_use">Wait before stopping</string>
+    <string name="emergency_stop_delay_length">Duration</string>
     <string name="section_permissions">Permissions</string>
     <string name="all_granted">Everything is allowed.</string>
     <string name="grant">Allow</string>

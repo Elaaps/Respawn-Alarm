@@ -33,6 +33,9 @@ fun encodeSettings(settings: GlobalSettings): String = JSONObject().apply {
     put(KEY_OVERLAY_STYLE, settings.overlayStyle.name)
     put(KEY_VICTORY_ON_LEAVE, settings.victoryOnLeave)
     put(KEY_EMERGENCY_STOP, settings.emergencyStopEnabled)
+    put(KEY_EMERGENCY_STOP_CODE, settings.emergencyStopCode)
+    put(KEY_EMERGENCY_STOP_DELAY_ENABLED, settings.emergencyStopDelayEnabled)
+    put(KEY_EMERGENCY_STOP_DELAY, settings.emergencyStopDelayMin)
     putOpt(KEY_UPCOMING, settings.upcomingNoticeHours)
 }.toString()
 
@@ -62,6 +65,10 @@ fun decodeSettings(json: String): GlobalSettings {
             ?: defaults.overlayStyle,
         victoryOnLeave = obj.optBoolean(KEY_VICTORY_ON_LEAVE, defaults.victoryOnLeave),
         emergencyStopEnabled = obj.optBoolean(KEY_EMERGENCY_STOP, defaults.emergencyStopEnabled),
+        emergencyStopCode = obj.optBoolean(KEY_EMERGENCY_STOP_CODE, defaults.emergencyStopCode),
+        emergencyStopDelayEnabled = obj.optBoolean(KEY_EMERGENCY_STOP_DELAY_ENABLED, defaults.emergencyStopDelayEnabled),
+        emergencyStopDelayMin = obj.intOrNull(KEY_EMERGENCY_STOP_DELAY)?.cappedTo(GlobalSettings.EMERGENCY_STOP_DELAY_RANGE_MIN)
+            ?: defaults.emergencyStopDelayMin,
         upcomingNoticeHours = if (obj.has(KEY_UPCOMING)) {
             obj.intOrNull(KEY_UPCOMING)?.takeIf { it in GlobalSettings.UPCOMING_NOTICE_RANGE_HOURS }
                 ?: defaults.upcomingNoticeHours
@@ -179,6 +186,9 @@ private const val KEY_OVERLAY = "overlay"
 private const val KEY_OVERLAY_STYLE = "overlay_style"
 private const val KEY_VICTORY_ON_LEAVE = "victory_on_leave"
 private const val KEY_EMERGENCY_STOP = "emergency_stop_enabled"
+private const val KEY_EMERGENCY_STOP_CODE = "emergency_stop_code"
+private const val KEY_EMERGENCY_STOP_DELAY_ENABLED = "emergency_stop_delay_enabled"
+private const val KEY_EMERGENCY_STOP_DELAY = "emergency_stop_delay_min"
 private const val KEY_LOADING_GRACE = "loading_grace_sec"
 private const val KEY_LOADING_GRACE_ENABLED = "loading_grace_enabled"
 private const val KEY_UPCOMING = "upcoming_notice_hours"

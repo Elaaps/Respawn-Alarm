@@ -86,6 +86,9 @@ class SettingsJsonTest {
             overlayStyle = OverlayStyle.TIMER,
             victoryOnLeave = false,
             emergencyStopEnabled = false,
+            emergencyStopCode = true,
+            emergencyStopDelayEnabled = true,
+            emergencyStopDelayMin = 10,
             upcomingNoticeHours = 10,
         )
 
@@ -131,6 +134,15 @@ class SettingsJsonTest {
             GlobalSettings(inactivitySec = 12),
             decoded,
         )
+    }
+
+    @Test
+    fun `decodeSettings, with durations saved above the current limits, lowers them to the limits`() {
+        val json = """{"duration_sec":3600,"emergency_stop_delay_min":30}"""
+
+        val decoded = decodeSettings(json)
+
+        assertEquals(listOf(1800, 10), listOf(decoded.durationSec, decoded.emergencyStopDelayMin))
     }
 
     @Test

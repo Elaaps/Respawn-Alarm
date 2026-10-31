@@ -137,17 +137,19 @@ fun SwitchWithDetailsRow(
     onChange: (Boolean) -> Unit,
     shapes: ListItemShapes,
     icon: RowIcon? = null,
+    enabled: Boolean = true,
     onOpen: () -> Unit,
 ) {
     SegmentedListItem(
         onClick = onOpen,
         shapes = shapes,
+        enabled = enabled,
         leadingContent = icon?.let { { ShapedIcon(it) } },
         supportingContent = { Text(if (checked) summary else stringResource(R.string.off)) },
         trailingContent = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 VerticalDivider(Modifier.height(DETAILS_DIVIDER_HEIGHT).padding(end = 12.dp))
-                Switch(checked = checked, onCheckedChange = onChange)
+                Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
             }
         },
     ) { Text(label) }

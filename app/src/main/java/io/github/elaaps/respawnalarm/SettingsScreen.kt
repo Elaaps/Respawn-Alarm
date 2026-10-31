@@ -280,6 +280,62 @@ private fun ProtectionGroup(settings: GlobalSettings, onChange: (GlobalSettings)
                 enabled = state?.mode != SessionService.Mode.ALARM,
             )
         }
+        row { shapes ->
+            SwitchRow(
+                stringResource(R.string.emergency_stop_code),
+                settings.emergencyStopCode,
+                { onChange(settings.copy(emergencyStopCode = it)) },
+                shapes,
+                RowIcon(R.drawable.ic_password, IconStyle.OTHER),
+                description = stringResource(R.string.emergency_stop_code_desc),
+                enabled = settings.emergencyStopEnabled && state?.mode != SessionService.Mode.ALARM,
+            )
+        }
+        row { shapes ->
+            EmergencyStopDelayRow(
+                settings,
+                shapes,
+                enabled = settings.emergencyStopEnabled && state?.mode != SessionService.Mode.ALARM,
+                onChange = onChange,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmergencyStopDelayRow(settings: GlobalSettings, shapes: ListItemShapes, enabled: Boolean, onChange: (GlobalSettings) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val toggle = { on: Boolean -> onChange(settings.copy(emergencyStopDelayEnabled = on)) }
+    SwitchWithDetailsRow(
+        stringResource(R.string.emergency_stop_delay),
+        stringResource(R.string.minutes_value, settings.emergencyStopDelayMin),
+        settings.emergencyStopDelayEnabled,
+        toggle,
+        shapes,
+        RowIcon(R.drawable.ic_hourglass_top, IconStyle.OTHER),
+        enabled = enabled,
+    ) { open = true }
+    if (open) {
+        AlertDialog(
+            onDismissRequest = { open = false },
+            title = { Text(stringResource(R.string.emergency_stop_delay)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RowGroup {
+                        row { rowShapes ->
+                            SwitchRow(stringResource(R.string.emergency_stop_delay_use), settings.emergencyStopDelayEnabled, toggle, rowShapes)
+                        }
+                    }
+                    LabeledNumberChoices(
+                        stringResource(R.string.emergency_stop_delay_length),
+                        GlobalSettings.EMERGENCY_STOP_DELAY_CHOICES_MIN,
+                        settings.emergencyStopDelayMin,
+                        describe = { stringResource(R.string.minutes_value, it) },
+                    ) { onChange(settings.copy(emergencyStopDelayMin = it)) }
+                }
+            },
+            confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.done)) } },
+        )
     }
 }
 

@@ -3,6 +3,7 @@ package io.github.elaaps.respawnalarm
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoField
+import kotlin.time.Duration.Companion.minutes
 
 fun <T> ownValue(value: T, default: T?): T? = if (value == default) null else value
 
@@ -91,6 +92,9 @@ data class GlobalSettings(
     val overlayStyle: OverlayStyle = OverlayStyle.HEALTH_BAR,
     val victoryOnLeave: Boolean = true,
     val emergencyStopEnabled: Boolean = true,
+    val emergencyStopCode: Boolean = false,
+    val emergencyStopDelayEnabled: Boolean = false,
+    val emergencyStopDelayMin: Int = DEFAULT_EMERGENCY_STOP_DELAY_MIN,
     val upcomingNoticeHours: Int? = DEFAULT_UPCOMING_NOTICE_HOURS,
 ) {
     init {
@@ -100,6 +104,9 @@ data class GlobalSettings(
         }
         require(loadingGraceSec in LOADING_GRACE_RANGE_SEC) {
             "loadingGraceSec must be in $LOADING_GRACE_RANGE_SEC, was $loadingGraceSec"
+        }
+        require(emergencyStopDelayMin in EMERGENCY_STOP_DELAY_RANGE_MIN) {
+            "emergencyStopDelayMin must be in $EMERGENCY_STOP_DELAY_RANGE_MIN, was $emergencyStopDelayMin"
         }
         require(upcomingNoticeHours == null || upcomingNoticeHours in UPCOMING_NOTICE_RANGE_HOURS) {
             "upcomingNoticeHours must be in $UPCOMING_NOTICE_RANGE_HOURS, was $upcomingNoticeHours"
@@ -136,6 +143,8 @@ data class GlobalSettings(
         loadingGraceSec = effectiveLoadingGraceSec,
     )
 
+    val emergencyStopDelayMs: Long get() = if (emergencyStopDelayEnabled) emergencyStopDelayMin.minutes.inWholeMilliseconds else 0
+
     private val effectiveLoadingGraceSec: Int get() = if (loadingGraceEnabled) loadingGraceSec else 0
 
     private fun vibrates(vibrate: Boolean, soundEnabled: Boolean): Boolean = vibrate || !soundEnabled
@@ -150,6 +159,10 @@ data class GlobalSettings(
         val LOADING_GRACE_RANGE_SEC = 5..120
         val LOADING_GRACE_CHOICES_SEC = listOf(15, 30, 45, 60, 90, 120)
         const val DEFAULT_LOADING_GRACE_SEC = 30
+
+        val EMERGENCY_STOP_DELAY_RANGE_MIN = 1..10
+        val EMERGENCY_STOP_DELAY_CHOICES_MIN = listOf(1, 2, 3, 5, 7, 10)
+        const val DEFAULT_EMERGENCY_STOP_DELAY_MIN = 5
 
         val UPCOMING_NOTICE_RANGE_HOURS = 1..16
         const val DEFAULT_UPCOMING_NOTICE_HOURS = 8

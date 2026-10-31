@@ -146,6 +146,24 @@ class AlarmTest {
     }
 
     @Test
+    fun `emergencyStopDelayMs, with the waiting time turned off, is zero`() {
+        val settings = GlobalSettings(emergencyStopDelayEnabled = false, emergencyStopDelayMin = 10)
+
+        val delayMs = settings.emergencyStopDelayMs
+
+        assertEquals(0, delayMs)
+    }
+
+    @Test
+    fun `emergencyStopDelayMs, with the waiting time turned on, gives its length`() {
+        val settings = GlobalSettings(emergencyStopDelayEnabled = true, emergencyStopDelayMin = 10)
+
+        val delayMs = settings.emergencyStopDelayMs
+
+        assertEquals(600_000, delayMs)
+    }
+
+    @Test
     fun `ownValue, equal to the default, follows the default`() {
         val stored = ownValue(value = 300, default = 300)
 

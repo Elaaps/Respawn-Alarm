@@ -6,6 +6,7 @@ import android.hardware.biometrics.BiometricManager.Authenticators
 import android.hardware.biometrics.BiometricPrompt
 import android.os.Bundle
 import android.os.CancellationSignal
+import android.os.SystemClock
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,13 +14,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +40,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +53,8 @@ import kotlinx.coroutines.delay
 
 class RingingActivity : ComponentActivity() {
     private var confirmingEmergency by mutableStateOf(false)
+    private var emergencyCode by mutableStateOf<String?>(null)
+    private var emergencyCodeRequired = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +62,8 @@ class RingingActivity : ComponentActivity() {
         val store = AlarmStore(this)
         val ringingAlarmId = store.ringingAlarmId
         val alarm = store.resolve(ringingAlarmId)
-        val emergencyStopEnabled = store.settings().emergencyStopEnabled
+        val settings = store.settings()
+        emergencyCodeRequired = settings.emergencyStopCode
         var restarting = intent.getBooleanExtra(EXTRA_RESTART_ALARM, false) &&
             SessionService.state.value == null
         if (restarting) SessionService.start(this, SessionService.Mode.ALARM, ringingAlarmId)
@@ -75,8 +86,12 @@ class RingingActivity : ComponentActivity() {
                     snoozesLeft = state?.snoozesLeft ?: 0,
                     onLaunch = { launchTarget(alarm.targetPackage) },
                     onSnooze = ::snooze,
-                    onEmergency = if (emergencyStopEnabled) ::requestEmergencyStop else null,
+                    emergencyAvailableAt = state?.startedAt?.plus(settings.emergencyStopDelayMs)?.takeIf { settings.emergencyStopEnabled },
+                    onEmergency = ::requestEmergencyStop,
                 )
+                emergencyCode?.let { code ->
+                    EmergencyCodeDialog(code, onDismiss = { emergencyCode = null }, onMatch = ::stopAfterCode)
+                }
                 if (confirmingEmergency) {
                     AlertDialog(
                         onDismissRequest = { confirmingEmergency = false },
@@ -107,11 +122,21 @@ class RingingActivity : ComponentActivity() {
     }
 
     private fun requestEmergencyStop() = whenUnlocked {
-        val keyguard = getSystemService(KeyguardManager::class.java)
-        if (!keyguard.isDeviceSecure) {
-            confirmingEmergency = true
-            return@whenUnlocked
+        when {
+            emergencyCodeRequired -> emergencyCode = randomEmergencyCode()
+            isDeviceSecure() -> authenticateThenStop()
+            else -> confirmingEmergency = true
         }
+    }
+
+    private fun stopAfterCode() {
+        emergencyCode = null
+        if (isDeviceSecure()) authenticateThenStop() else emergencyStop()
+    }
+
+    private fun isDeviceSecure(): Boolean = getSystemService(KeyguardManager::class.java).isDeviceSecure
+
+    private fun authenticateThenStop() {
         BiometricPrompt.Builder(this)
             .setTitle(getString(R.string.emergency_title))
             .setSubtitle(getString(R.string.emergency_subtitle))
@@ -154,9 +179,10 @@ private fun RingingScreen(
     target: String,
     durationSec: Int,
     snoozesLeft: Int,
+    emergencyAvailableAt: Long?,
     onLaunch: () -> Unit,
     onSnooze: () -> Unit,
-    onEmergency: (() -> Unit)?,
+    onEmergency: () -> Unit,
 ) {
     val now by produceState(LocalTime.now()) {
         while (true) {
@@ -166,10 +192,8 @@ private fun RingingScreen(
     }
     BossBackground {
         Box(Modifier.fillMaxSize().safeDrawingPadding()) {
-            if (onEmergency != null) {
-                IconButton(onClick = onEmergency, modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                    Icon(painterResource(R.drawable.ic_support), contentDescription = stringResource(R.string.action_emergency), tint = BossColors.Lilac)
-                }
+            if (emergencyAvailableAt != null) {
+                EmergencyButton(emergencyAvailableAt, onEmergency, Modifier.align(Alignment.TopEnd).padding(8.dp))
             }
             Column(
                 modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 28.dp),
@@ -204,8 +228,62 @@ private fun RingingScreen(
     }
 }
 
+@Composable
+private fun EmergencyButton(availableAt: Long, onClick: () -> Unit, modifier: Modifier) {
+    val waitMs by produceState(availableAt - SystemClock.elapsedRealtime(), availableAt) {
+        while (value > 0) {
+            delay(CLOCK_REFRESH)
+            value = availableAt - SystemClock.elapsedRealtime()
+        }
+    }
+    val available = waitMs <= 0
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        if (!available) Text(formatDuration(waitMs), style = bossBody(), color = BossColors.Lilac)
+        IconButton(onClick = onClick, enabled = available) {
+            Icon(
+                painterResource(R.drawable.ic_support),
+                contentDescription = stringResource(R.string.action_emergency),
+                tint = if (available) BossColors.Lilac else BossColors.Lilac.copy(alpha = DISABLED_ALPHA),
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmergencyCodeDialog(code: String, onDismiss: () -> Unit, onMatch: () -> Unit) {
+    var typed by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.emergency_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.emergency_code_prompt))
+                Text(groupEmergencyCode(code), fontFamily = FontFamily.Monospace, fontSize = 24.sp)
+                OutlinedTextField(
+                    value = typed,
+                    onValueChange = { typed = it },
+                    label = { Text(stringResource(R.string.emergency_code_field)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Characters,
+                        autoCorrectEnabled = false,
+                        keyboardType = KeyboardType.Ascii,
+                    ),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onMatch, enabled = matchesEmergencyCode(code, typed)) {
+                Text(stringResource(R.string.emergency_confirm))
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
+}
+
 private fun bossBody() = TextStyle(fontFamily = BossFont, fontSize = 22.sp, lineHeight = 26.sp)
 
 private val CLOCK_REFRESH = 1.seconds
 private val CLOCK_SIZE = 104.sp
 private const val MILLIS_PER_SECOND = 1_000L
+private const val DISABLED_ALPHA = 0.38f

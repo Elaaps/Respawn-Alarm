@@ -68,6 +68,8 @@
     <string name="emergency_title">Arrêter l\'alarme sans jouer ?</string>
     <string name="emergency_subtitle">Utilise le verrouillage de l\'écran</string>
     <string name="emergency_confirm">Arrêter</string>
+    <string name="emergency_code_prompt">Tape ce code pour arrêter l\'alarme</string>
+    <string name="emergency_code_field">Code</string>
     <string name="notif_emergency_title">Alarme arrêtée sans jouer</string>
 
     <string name="home_no_alarm">Aucune alarme</string>
@@ -146,6 +148,11 @@
     <string name="force_stop_guard_explanation">Nécessaire pour empêcher l\'arrêt forcé de Respawn Alarm.</string>
     <string name="emergency_stop_enabled">Arrêt d\'urgence</string>
     <string name="emergency_stop_enabled_desc">Arrête l\'alarme avec le verrouillage de l\'écran, sans jouer.</string>
+    <string name="emergency_stop_code">Taper un code</string>
+    <string name="emergency_stop_code_desc">Recopie un code aléatoire avant d\'arrêter.</string>
+    <string name="emergency_stop_delay">Temps d\'attente</string>
+    <string name="emergency_stop_delay_use">Attendre avant l\'arrêt</string>
+    <string name="emergency_stop_delay_length">Durée</string>
     <string name="section_permissions">Autorisations</string>
     <string name="all_granted">Tout est autorisé.</string>
     <string name="grant">Autoriser</string>

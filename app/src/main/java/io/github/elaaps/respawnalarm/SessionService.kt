@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-data class SessionState(val mode: SessionService.Mode, val snoozesLeft: Int)
+data class SessionState(val mode: SessionService.Mode, val snoozesLeft: Int, val startedAt: Long)
 
 class SessionService : Service() {
     enum class Mode { ALARM, DIAGNOSTIC }
@@ -304,7 +304,7 @@ class SessionService : Service() {
     }
 
     private fun publishState() {
-        _state.value = mode?.let { SessionState(it, snoozesLeft()) }
+        _state.value = mode?.let { SessionState(it, snoozesLeft(), startedAt) }
     }
 
     private fun currentNotification(): Notification = when (mode) {
