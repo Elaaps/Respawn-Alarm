@@ -45,7 +45,7 @@ fun decodeSettings(json: String): GlobalSettings {
     }
     return GlobalSettings(
         targetPackage = obj.stringOrNull(KEY_TARGET),
-        durationSec = obj.intOrNull(KEY_DURATION)?.takeIf { it in GlobalSettings.DURATION_RANGE_SEC } ?: defaults.durationSec,
+        durationSec = obj.durationOrNull() ?: defaults.durationSec,
         inactivitySec = obj.intOrNull(KEY_INACTIVITY)?.takeIf { it in GlobalSettings.INACTIVITY_RANGE_SEC }
             ?: defaults.inactivitySec,
         soundEnabled = obj.optBoolean(KEY_SOUND, defaults.soundEnabled),
@@ -98,7 +98,7 @@ private fun alarmFromJson(obj: JSONObject): Alarm? = try {
         label = obj.optString(KEY_LABEL, ""),
         skippedDate = obj.stringOrNull(KEY_SKIPPED)?.let(::dateOrNull),
         targetPackage = obj.stringOrNull(KEY_TARGET),
-        durationSec = obj.intOrNull(KEY_DURATION)?.takeIf { it in GlobalSettings.DURATION_RANGE_SEC },
+        durationSec = obj.durationOrNull(),
         soundEnabled = if (obj.isNull(KEY_SOUND)) null else obj.optBoolean(KEY_SOUND),
         tone = obj.optJSONObject(KEY_TONE)?.let(::toneFromJson),
         vibrate = if (obj.isNull(KEY_VIBRATE)) null else obj.optBoolean(KEY_VIBRATE),
@@ -145,6 +145,10 @@ private fun dateOrNull(text: String): LocalDate? = try {
 private fun JSONObject.stringOrNull(key: String): String? = if (isNull(key)) null else optString(key)
 
 private fun JSONObject.intOrNull(key: String): Int? = if (isNull(key)) null else (opt(key) as? Number)?.toInt()
+
+private fun JSONObject.durationOrNull(): Int? = intOrNull(KEY_DURATION)?.cappedTo(GlobalSettings.DURATION_RANGE_SEC)
+
+private fun Int.cappedTo(range: IntRange): Int? = coerceAtMost(range.last).takeIf { it in range }
 
 private fun JSONObject.volumeOrNull(): VolumeMode? =
     stringOrNull(KEY_VOLUME)?.let { name -> VolumeMode.entries.firstOrNull { it.name == name } }

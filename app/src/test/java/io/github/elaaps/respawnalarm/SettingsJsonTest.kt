@@ -134,6 +134,15 @@ class SettingsJsonTest {
     }
 
     @Test
+    fun `decodeAlarms, with a play time saved above the current limit, lowers it to the limit`() {
+        val json = """[{"id":1,"hour":7,"minute":0,"duration_sec":3600}]"""
+
+        val alarm = decodeAlarms(json).single()
+
+        assertEquals(1800, alarm.durationSec)
+    }
+
+    @Test
     fun `decodeSettings, of text that is not an object, gives the defaults`() {
         val decoded = decodeSettings("[]")
 

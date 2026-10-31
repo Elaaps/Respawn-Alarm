@@ -21,10 +21,12 @@ import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedListItem
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -37,6 +39,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class RowGroupScope {
     val rows = mutableListOf<@Composable (ListItemShapes) -> Unit>()
@@ -318,19 +322,33 @@ fun ToneRow(
 
 @Composable
 fun PlayTimeRow(durationSec: Int?, defaultSec: Int?, shapes: ListItemShapes, onChange: (Int?) -> Unit) {
+    val stops = GlobalSettings.PLAY_TIME_STOPS_SEC
     val shownSec = durationSec ?: defaultSec ?: GlobalSettings().durationSec
-    val text = formatDuration(shownSec * MILLIS_PER_SECOND)
-    StepperRow(
-        stringResource(R.string.play_time),
-        markDefault(text, isDefault = durationSec == null && defaultSec != null),
-        shapes,
-        RowIcon(R.drawable.ic_timer, IconStyle.STOP),
-        onMinus = { onChange(ownValue(stepPlayTime(shownSec, -GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
-        onPlus = { onChange(ownValue(stepPlayTime(shownSec, GlobalSettings.DURATION_STEP_SEC), defaultSec)) },
-    )
+    val shownIndex = nearestStopIndex(stops, shownSec)
+    val slider = rememberSliderState(value = shownIndex.toFloat(), steps = stops.size - 2, trackRange = 0f..stops.lastIndex.toFloat())
+    val pickedIndex = slider.value.roundToInt()
+    val pickedSec = if (pickedIndex == shownIndex) shownSec else stops[pickedIndex]
+    val text = formatDuration(pickedSec * MILLIS_PER_SECOND)
+    SegmentedListItem(
+        shapes = shapes,
+        leadingContent = { ShapedIcon(RowIcon(R.drawable.ic_timer, IconStyle.STOP)) },
+        supportingContent = {
+            Column {
+                Text(markDefault(text, isDefault = durationSec == null && defaultSec != null && pickedSec == shownSec))
+                Slider(
+                    state = slider,
+                    onValueChange = { slider.value = it },
+                    onValueChangeFinished = {
+                        val index = slider.value.roundToInt()
+                        if (index != shownIndex) onChange(ownValue(stops[index], defaultSec))
+                    },
+                )
+            }
+        },
+    ) { Text(stringResource(R.string.play_time)) }
 }
 
-fun stepPlayTime(durationSec: Int, deltaSec: Int): Int = (durationSec + deltaSec).coerceIn(GlobalSettings.DURATION_RANGE_SEC)
+fun nearestStopIndex(stops: List<Int>, value: Int): Int = stops.indices.minBy { abs(stops[it] - value) }
 
 private const val MILLIS_PER_SECOND = 1_000L
 

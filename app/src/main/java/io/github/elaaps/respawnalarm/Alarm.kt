@@ -139,8 +139,8 @@ data class GlobalSettings(
     private fun vibrates(vibrate: Boolean, soundEnabled: Boolean): Boolean = vibrate || !soundEnabled
 
     companion object {
-        val DURATION_RANGE_SEC = 30..3600
-        const val DURATION_STEP_SEC = 30
+        val DURATION_RANGE_SEC = 30..1800
+        val PLAY_TIME_STOPS_SEC = listOf(30, 60, 90, 120, 180, 240, 300, 420, 600, 900, 1200, 1500, 1800)
 
         val INACTIVITY_RANGE_SEC = 3..60
         const val INACTIVITY_STEP_SEC = 1
