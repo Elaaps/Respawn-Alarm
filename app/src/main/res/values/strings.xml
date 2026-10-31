@@ -116,6 +116,7 @@
     <string name="diag_step_text">Start the diagnostic, open your game, play for a few seconds, then pull down the notification shade: the touch count must go up. Otherwise, the alarm can never be stopped.</string>
     <string name="diag_step_button">Start the diagnostic</string>
 
+    <string name="action_back">Back</string>
     <string name="delete_alarm">Delete this alarm</string>
     <string name="alarm_label">Alarm name</string>
     <string name="section_overrides">Settings of this alarm</string>

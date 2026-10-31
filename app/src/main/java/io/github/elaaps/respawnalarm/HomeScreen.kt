@@ -33,7 +33,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumFloatingActionButton
@@ -140,12 +139,13 @@ fun HomeScreen(onEdit: (Long) -> Unit, onSettings: () -> Unit, onSetup: () -> Un
             TopAppBar(
                 title = {},
                 actions = {
-                    IconButton(onClick = { confirmingDeleteAll = true }, enabled = alarms.isNotEmpty()) {
-                        Icon(painterResource(R.drawable.ic_delete_sweep), contentDescription = stringResource(R.string.action_delete_all))
-                    }
-                    IconButton(onClick = onSettings) {
-                        Icon(painterResource(R.drawable.ic_settings), contentDescription = stringResource(R.string.settings_title))
-                    }
+                    TooltipIconButton(
+                        R.drawable.ic_delete_sweep,
+                        stringResource(R.string.action_delete_all),
+                        onClick = { confirmingDeleteAll = true },
+                        enabled = alarms.isNotEmpty(),
+                    )
+                    TooltipIconButton(R.drawable.ic_settings, stringResource(R.string.settings_title), onSettings)
                 },
             )
         },

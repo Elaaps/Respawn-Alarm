@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.MaterialTheme
@@ -84,7 +83,7 @@ fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
 
 @Composable
 fun BackButton(onBack: () -> Unit) {
-    IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = null) }
+    TooltipIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onBack)
 }
 
 @Composable

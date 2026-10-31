@@ -13,8 +13,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItemShapes
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -36,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.time.LocalTime
@@ -74,11 +71,11 @@ fun AlarmEditorScreen(alarmId: Long, onBack: () -> Unit) {
                 },
                 navigationIcon = { BackButton(onBack) },
                 actions = {
-                    IconButton(onClick = {
+                    TooltipIconButton(R.drawable.ic_delete, stringResource(R.string.delete_alarm), onClick = {
                         store.delete(current.id)
                         AlarmScheduler.schedule(context)
                         onBack()
-                    }) { Icon(painterResource(R.drawable.ic_delete), contentDescription = stringResource(R.string.delete_alarm)) }
+                    })
                 },
             )
         },

@@ -115,6 +115,7 @@
     <string name="diag_step_text">Lance le diagnostic, ouvre ton jeu, joue quelques secondes, puis tire le volet des notifications : le nombre d\'appuis doit augmenter. Sinon, l\'alarme ne pourra jamais être arrêtée.</string>
     <string name="diag_step_button">Lancer le diagnostic</string>
 
+    <string name="action_back">Retour</string>
     <string name="delete_alarm">Supprimer cette alarme</string>
     <string name="alarm_label">Nom de l\'alarme</string>
     <string name="section_overrides">Réglages de cette alarme</string>
