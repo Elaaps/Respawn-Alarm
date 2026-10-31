@@ -19,13 +19,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
@@ -216,14 +217,27 @@ private fun setupSteps(firstLaunch: Boolean, needsTarget: Boolean, missing: List
 @Composable
 private fun PageTitle(text: String) = Text(text, style = MaterialTheme.typography.headlineMedium)
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PillButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
-    Button(onClick = onClick, enabled = enabled, modifier = Modifier.fillMaxWidth().height(PILL_HEIGHT)) { Text(text) }
+    Button(
+        onClick = onClick,
+        shapes = ButtonDefaults.shapesFor(PILL_HEIGHT),
+        modifier = Modifier.fillMaxWidth().heightIn(PILL_HEIGHT),
+        enabled = enabled,
+        contentPadding = ButtonDefaults.contentPaddingFor(PILL_HEIGHT),
+    ) { Text(text, style = ButtonDefaults.textStyleFor(PILL_HEIGHT)) }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TonalPillButton(text: String, onClick: () -> Unit) {
-    FilledTonalButton(onClick = onClick, modifier = Modifier.fillMaxWidth().height(PILL_HEIGHT)) { Text(text, maxLines = 1) }
+    FilledTonalButton(
+        onClick = onClick,
+        shapes = ButtonDefaults.shapesFor(PILL_HEIGHT),
+        modifier = Modifier.fillMaxWidth().heightIn(PILL_HEIGHT),
+        contentPadding = ButtonDefaults.contentPaddingFor(PILL_HEIGHT),
+    ) { Text(text, style = ButtonDefaults.textStyleFor(PILL_HEIGHT), maxLines = 1) }
 }
 
 @Composable
@@ -291,4 +305,5 @@ private fun openUrl(context: Context, url: String) {
 
 private val STEP_SHAPE_SIZE = 168.dp
 private val STEP_ICON_SIZE = 72.dp
-private val PILL_HEIGHT = 56.dp
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private val PILL_HEIGHT = ButtonDefaults.MediumContainerHeight
