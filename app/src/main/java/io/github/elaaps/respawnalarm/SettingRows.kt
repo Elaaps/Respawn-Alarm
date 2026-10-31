@@ -528,13 +528,10 @@ fun TargetAppRow(packageName: String?, defaultPackage: String?, shapes: ListItem
         },
     ) { Text(stringResource(R.string.target_app)) }
     if (picking) {
-        AppPickerDialog(
+        AppPickerSheet(
             selectedPackage = shown,
             defaultPackage = defaultPackage,
-            onPick = {
-                picking = false
-                onChange(ownValue(it, defaultPackage))
-            },
+            onPick = { onChange(ownValue(it, defaultPackage)) },
             onDismiss = { picking = false },
         )
     }
