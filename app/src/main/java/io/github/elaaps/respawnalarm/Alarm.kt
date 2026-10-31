@@ -34,7 +34,9 @@ data class Snooze(val maxCount: Int, val minutes: Int, val enabled: Boolean = tr
 
     companion object {
         val COUNT_RANGE = 1..5
+        val COUNT_CHOICES = COUNT_RANGE.toList()
         val MINUTES_RANGE = 1..30
+        val MINUTES_CHOICES = listOf(3, 5, 10, 15, 20, 30)
 
         val OFF = Snooze(maxCount = 1, minutes = 5, enabled = false)
     }
@@ -143,10 +145,10 @@ data class GlobalSettings(
         val PLAY_TIME_STOPS_SEC = listOf(30, 60, 90, 120, 180, 240, 300, 420, 600, 900, 1200, 1500, 1800)
 
         val INACTIVITY_RANGE_SEC = 3..60
-        const val INACTIVITY_STEP_SEC = 1
+        val INACTIVITY_CHOICES_SEC = listOf(5, 10, 15, 20, 30, 60)
 
         val LOADING_GRACE_RANGE_SEC = 5..120
-        const val LOADING_GRACE_STEP_SEC = 5
+        val LOADING_GRACE_CHOICES_SEC = listOf(15, 30, 45, 60, 90, 120)
         const val DEFAULT_LOADING_GRACE_SEC = 30
 
         val UPCOMING_NOTICE_RANGE_HOURS = 1..16

@@ -9,12 +9,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.ListItemShapes
@@ -25,6 +28,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
@@ -37,6 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import kotlin.math.abs
@@ -161,18 +169,78 @@ private fun steadyColors(): ListItemColors {
 }
 
 @Composable
-fun StepperRow(label: String, value: String, shapes: ListItemShapes, icon: RowIcon, onMinus: () -> Unit, onPlus: () -> Unit) {
-    var editing by remember { mutableStateOf(false) }
-    ValueRow(label, value, shapes, icon) { editing = true }
-    if (editing) {
-        AlertDialog(
-            onDismissRequest = { editing = false },
-            title = { Text(label) },
-            text = { Stepper(label = "", value = value, onMinus = onMinus, onPlus = onPlus) },
-            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
-        )
+fun DurationRow(
+    label: String,
+    shapes: ListItemShapes,
+    icon: RowIcon,
+    choices: List<Int>,
+    selected: Int,
+    describe: @Composable (Int) -> String,
+    enabled: Boolean = true,
+    onSelect: (Int) -> Unit,
+) {
+    SegmentedListItem(
+        shapes = shapes,
+        enabled = enabled,
+        leadingContent = { ShapedIcon(icon) },
+        supportingContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(describe(selected))
+                NumberChoices(choices, selected, describe, enabled, onSelect)
+            }
+        },
+    ) { Text(label) }
+}
+
+@Composable
+fun LabeledNumberChoices(label: String, choices: List<Int>, selected: Int, describe: @Composable (Int) -> String, onSelect: (Int) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row {
+            Text(label, modifier = Modifier.weight(1f))
+            Text(describe(selected), style = MaterialTheme.typography.titleMedium)
+        }
+        NumberChoices(choices, selected, describe, enabled = true, onSelect)
     }
 }
+
+@Composable
+private fun NumberChoices(
+    choices: List<Int>,
+    selected: Int,
+    describe: @Composable (Int) -> String,
+    enabled: Boolean,
+    onSelect: (Int) -> Unit,
+) {
+    val shown = if (selected in choices) choices else (choices + selected).sorted()
+    ConnectedChoices(shown.map { Choice(it, it.toString(), describe(it)) }, selected, enabled, onSelect)
+}
+
+@Composable
+private fun <T> ConnectedChoices(choices: List<Choice<T>>, selected: T, enabled: Boolean, onSelect: (T) -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
+        choices.forEachIndexed { index, choice ->
+            ToggleButton(
+                checked = choice.value == selected,
+                onCheckedChange = { onSelect(choice.value) },
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics {
+                        role = Role.RadioButton
+                        contentDescription = choice.description
+                    },
+                enabled = enabled,
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    choices.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                },
+                contentPadding = CONNECTED_CHOICE_PADDING,
+            ) { Text(choice.label, maxLines = 1) }
+        }
+    }
+}
+
+private val CONNECTED_CHOICE_PADDING = PaddingValues(horizontal = 4.dp)
 
 @Composable
 fun VibrateRow(alarm: ResolvedAlarm, shapes: ListItemShapes, onChange: (Boolean) -> Unit) {
@@ -188,7 +256,27 @@ fun VibrateRow(alarm: ResolvedAlarm, shapes: ListItemShapes, onChange: (Boolean)
     )
 }
 
-data class Choice<T>(val value: T, val label: String)
+data class Choice<T>(val value: T, val label: String, val description: String = label)
+
+@Composable
+fun <T> ConnectedChoiceRow(
+    label: String,
+    choices: List<Choice<T>>,
+    selected: T,
+    shapes: ListItemShapes,
+    icon: RowIcon,
+    enabled: Boolean = true,
+    onSelect: (T) -> Unit,
+) {
+    SegmentedListItem(
+        shapes = shapes,
+        enabled = enabled,
+        leadingContent = { ShapedIcon(icon) },
+        supportingContent = {
+            Box(Modifier.padding(top = 8.dp)) { ConnectedChoices(choices, selected, enabled, onSelect) }
+        },
+    ) { Text(label) }
+}
 
 @Composable
 fun <T> ChoiceRow(
@@ -377,7 +465,7 @@ fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, shapes: ListItemShapes, o
                     RowGroup {
                         row { SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle, it) }
                     }
-                    SnoozeSteppers(shown, change)
+                    SnoozeChoices(shown, change)
                 }
             },
             confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
@@ -386,19 +474,19 @@ fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, shapes: ListItemShapes, o
 }
 
 @Composable
-private fun SnoozeSteppers(shown: Snooze, onChange: (Snooze) -> Unit) {
-    Stepper(
-        label = stringResource(R.string.snooze_count),
-        value = shown.maxCount.toString(),
-        onMinus = { onChange(shown.copy(maxCount = (shown.maxCount - 1).coerceIn(Snooze.COUNT_RANGE))) },
-        onPlus = { onChange(shown.copy(maxCount = (shown.maxCount + 1).coerceIn(Snooze.COUNT_RANGE))) },
-    )
-    Stepper(
-        label = stringResource(R.string.snooze_minutes),
-        value = stringResource(R.string.minutes_value, shown.minutes),
-        onMinus = { onChange(shown.copy(minutes = (shown.minutes - 1).coerceIn(Snooze.MINUTES_RANGE))) },
-        onPlus = { onChange(shown.copy(minutes = (shown.minutes + 1).coerceIn(Snooze.MINUTES_RANGE))) },
-    )
+private fun SnoozeChoices(shown: Snooze, onChange: (Snooze) -> Unit) {
+    LabeledNumberChoices(
+        stringResource(R.string.snooze_count),
+        Snooze.COUNT_CHOICES,
+        shown.maxCount,
+        describe = { it.toString() },
+    ) { onChange(shown.copy(maxCount = it)) }
+    LabeledNumberChoices(
+        stringResource(R.string.snooze_minutes),
+        Snooze.MINUTES_CHOICES,
+        shown.minutes,
+        describe = { stringResource(R.string.minutes_value, it) },
+    ) { onChange(shown.copy(minutes = it)) }
 }
 
 private enum class ToneChoice { Default, System, Current, Pick }

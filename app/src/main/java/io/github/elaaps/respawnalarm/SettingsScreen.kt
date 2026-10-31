@@ -34,10 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.elaaps.respawnalarm.GlobalSettings.Companion.INACTIVITY_RANGE_SEC
-import io.github.elaaps.respawnalarm.GlobalSettings.Companion.INACTIVITY_STEP_SEC
-import io.github.elaaps.respawnalarm.GlobalSettings.Companion.LOADING_GRACE_RANGE_SEC
-import io.github.elaaps.respawnalarm.GlobalSettings.Companion.LOADING_GRACE_STEP_SEC
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit, onSetup: () -> Unit) {
@@ -101,14 +97,14 @@ private fun StopGroup(settings: GlobalSettings, onChange: (GlobalSettings) -> Un
             PlayTimeRow(settings.durationSec, defaultSec = null, shapes) { sec -> sec?.let { onChange(settings.copy(durationSec = it)) } }
         }
         row { shapes ->
-            StepperRow(
+            DurationRow(
                 stringResource(R.string.max_inactivity),
-                stringResource(R.string.seconds_value, settings.inactivitySec),
                 shapes,
                 RowIcon(R.drawable.ic_touch_app, IconStyle.STOP),
-                onMinus = { onChange(settings.copy(inactivitySec = stepInactivity(settings, -INACTIVITY_STEP_SEC))) },
-                onPlus = { onChange(settings.copy(inactivitySec = stepInactivity(settings, INACTIVITY_STEP_SEC))) },
-            )
+                GlobalSettings.INACTIVITY_CHOICES_SEC,
+                settings.inactivitySec,
+                describe = { stringResource(R.string.seconds_value, it) },
+            ) { onChange(settings.copy(inactivitySec = it)) }
         }
         row { shapes -> LoadingGraceRow(settings, shapes, onChange) }
     }
@@ -168,7 +164,7 @@ private fun OverlayGroup(settings: GlobalSettings, onChange: (GlobalSettings) ->
             )
         }
         row { shapes ->
-            ChoiceRow(
+            ConnectedChoiceRow(
                 stringResource(R.string.overlay_style),
                 listOf(
                     Choice(OverlayStyle.HEALTH_BAR, stringResource(R.string.overlay_style_health_bar)),
@@ -231,24 +227,18 @@ private fun LoadingGraceRow(settings: GlobalSettings, shapes: ListItemShapes, on
                     RowGroup {
                         row { rowShapes -> SwitchRow(stringResource(R.string.loading_grace_use), settings.loadingGraceEnabled, toggle, rowShapes) }
                     }
-                    Stepper(
-                        label = stringResource(R.string.loading_grace_length),
-                        value = length,
-                        onMinus = { onChange(settings.copy(loadingGraceSec = stepLoadingGrace(settings, -LOADING_GRACE_STEP_SEC))) },
-                        onPlus = { onChange(settings.copy(loadingGraceSec = stepLoadingGrace(settings, LOADING_GRACE_STEP_SEC))) },
-                    )
+                    LabeledNumberChoices(
+                        stringResource(R.string.loading_grace_length),
+                        GlobalSettings.LOADING_GRACE_CHOICES_SEC,
+                        settings.loadingGraceSec,
+                        describe = { stringResource(R.string.seconds_value, it) },
+                    ) { onChange(settings.copy(loadingGraceSec = it)) }
                 }
             },
             confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.done)) } },
         )
     }
 }
-
-private fun stepLoadingGrace(settings: GlobalSettings, deltaSec: Int): Int =
-    (settings.loadingGraceSec + deltaSec).coerceIn(LOADING_GRACE_RANGE_SEC)
-
-private fun stepInactivity(settings: GlobalSettings, deltaSec: Int): Int =
-    (settings.inactivitySec + deltaSec).coerceIn(INACTIVITY_RANGE_SEC)
 
 @Composable
 private fun ProtectionGroup(settings: GlobalSettings, onChange: (GlobalSettings) -> Unit, resumeCount: Int) {
