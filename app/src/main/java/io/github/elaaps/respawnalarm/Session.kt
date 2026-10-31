@@ -6,6 +6,7 @@ class Session(
     private val snoozeMs: Long = 0,
     maxSnoozes: Int = 0,
     private val loadingGraceMs: Long = 0,
+    private val callHoldMs: Long = 0,
 ) {
     init {
         require(durationMs > 0) { "durationMs must be positive, was $durationMs" }
@@ -13,9 +14,10 @@ class Session(
         require(maxSnoozes >= 0) { "maxSnoozes must not be negative, was $maxSnoozes" }
         require(maxSnoozes == 0 || snoozeMs > 0) { "snoozeMs must be positive to snooze, was $snoozeMs" }
         require(loadingGraceMs >= 0) { "loadingGraceMs must not be negative, was $loadingGraceMs" }
+        require(callHoldMs >= 0) { "callHoldMs must not be negative, was $callHoldMs" }
     }
 
-    enum class Phase { RINGING, LOADING, PLAYING, SNOOZED, DONE }
+    enum class Phase { RINGING, LOADING, PLAYING, SNOOZED, ON_CALL, DONE }
 
     var phase = Phase.RINGING
         private set
@@ -39,6 +41,8 @@ class Session(
     private var lastTickAt: Long? = null
     private var loadingGraceUsed = false
     private var loadingUntil = 0L
+    private var callSince: Long? = null
+    private var progressKept = false
 
     fun snooze(now: Long) {
         check(canSnooze) { "cannot snooze in phase $phase with $snoozesLeft snoozes left" }
@@ -47,17 +51,17 @@ class Session(
         phase = Phase.SNOOZED
     }
 
-    fun tick(now: Long, targetInForeground: Boolean, lastTouchAt: Long?): Phase {
+    fun tick(now: Long, targetInForeground: Boolean, lastTouchAt: Long?, inCall: Boolean = false): Phase {
         val active = targetInForeground && lastTouchAt != null && now - lastTouchAt < inactivityMs
         val step = lastTickAt?.let { (now - it).coerceIn(0, MAX_STEP_MS) } ?: 0
         lastTickAt = now
+        callSince = if (inCall) callSince ?: now else null
+        val holdingCall = callSince?.let { now - it < callHoldMs } ?: false
 
         when (phase) {
             Phase.RINGING -> when {
-                active -> {
-                    phase = Phase.PLAYING
-                    playedMs = 0
-                }
+                active -> startPlaying()
+                holdingCall -> phase = Phase.ON_CALL
                 targetInForeground && !loadingGraceUsed && loadingGraceMs > 0 -> {
                     loadingGraceUsed = true
                     loadingUntil = now + loadingGraceMs
@@ -65,30 +69,42 @@ class Session(
                 }
             }
             Phase.LOADING -> when {
-                active -> {
-                    phase = Phase.PLAYING
-                    playedMs = 0
-                }
+                active -> startPlaying()
+                holdingCall -> phase = Phase.ON_CALL
                 !targetInForeground || now >= loadingUntil -> phase = Phase.RINGING
             }
-            Phase.PLAYING -> if (active) {
-                playedMs += step
-                if (playedMs >= durationMs) phase = Phase.DONE
-            } else {
-                phase = Phase.RINGING
-                playedMs = 0
-                resets++
+            Phase.PLAYING -> when {
+                active -> {
+                    playedMs += step
+                    if (playedMs >= durationMs) phase = Phase.DONE
+                }
+                holdingCall -> {
+                    phase = Phase.ON_CALL
+                    progressKept = true
+                }
+                else -> {
+                    phase = Phase.RINGING
+                    playedMs = 0
+                    resets++
+                }
             }
             Phase.SNOOZED -> when {
-                active -> {
-                    phase = Phase.PLAYING
-                    playedMs = 0
-                }
-                now >= snoozedUntil -> phase = Phase.RINGING
+                active -> startPlaying()
+                now >= snoozedUntil -> phase = if (holdingCall) Phase.ON_CALL else Phase.RINGING
+            }
+            Phase.ON_CALL -> when {
+                active -> startPlaying()
+                !holdingCall -> phase = Phase.RINGING
             }
             Phase.DONE -> Unit
         }
         return phase
+    }
+
+    private fun startPlaying() {
+        if (!progressKept) playedMs = 0
+        progressKept = false
+        phase = Phase.PLAYING
     }
 
     private companion object {

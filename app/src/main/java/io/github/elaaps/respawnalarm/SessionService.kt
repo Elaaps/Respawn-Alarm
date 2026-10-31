@@ -1,16 +1,20 @@
 package io.github.elaaps.respawnalarm
 
+import android.Manifest
 import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Notification
 import android.app.Service
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.os.SystemClock
+import android.telecom.TelecomManager
 import java.time.Instant
 import java.time.LocalTime
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -142,6 +146,7 @@ class SessionService : Service() {
                 snoozeMs = alarm.snoozeMs,
                 maxSnoozes = alarm.snooze.allowedCount,
                 loadingGraceMs = alarm.loadingGraceMs,
+                callHoldMs = CALL_HOLD_MS,
             )
         }
         publishState()
@@ -164,8 +169,11 @@ class SessionService : Service() {
             val settings = store.settings()
             victoryOnLeave = settings.victoryOnLeave
             if (settings.overlayEnabled) countdown = CountdownOverlay(this, store, settings.overlayStyle, onKnockedOutTap = ::showVictory)
-            sound = AlarmSound(this, alarm).also { it.play() }
-            showRingingScreen()
+            sound = AlarmSound(this, alarm)
+            if (!inCall()) {
+                sound?.play()
+                showRingingScreen()
+            }
         }
 
         handler.post(tick)
@@ -190,15 +198,16 @@ class SessionService : Service() {
                 if (completing) return watchVictory(now, foreground)
                 val session = session ?: return
                 val inTarget = foreground != null && foreground == alarm.targetPackage
-                val phase = session.tick(now, inTarget, watcher.lastTouchAt)
+                val phase = session.tick(now, inTarget, watcher.lastTouchAt, inCall())
                 countdown?.let { if (inTarget) it.show(overlayState(phase, session.remainingMs, alarm.durationMs)) else it.hide() }
                 when (phase) {
                     Session.Phase.RINGING -> sound?.play()
-                    Session.Phase.LOADING, Session.Phase.PLAYING, Session.Phase.SNOOZED -> sound?.pause()
+                    Session.Phase.LOADING, Session.Phase.PLAYING, Session.Phase.SNOOZED, Session.Phase.ON_CALL -> sound?.pause()
                     Session.Phase.DONE -> return complete()
                 }
                 if (phase == Session.Phase.PLAYING) everPlayed = true
-                if (lastPhase == Session.Phase.SNOOZED && phase == Session.Phase.RINGING) showRingingScreen()
+                val quietEnded = lastPhase == Session.Phase.SNOOZED || lastPhase == Session.Phase.ON_CALL
+                if (quietEnded && phase == Session.Phase.RINGING) showRingingScreen()
                 if (phase != lastPhase) publishState()
                 val countdownDue = phase == Session.Phase.PLAYING && now - lastNotifiedAt >= NOTIFY_EVERY_MS
                 if (phase != lastPhase || countdownDue) {
@@ -285,6 +294,15 @@ class SessionService : Service() {
         ignoring<ActivityNotFoundException> { startActivity(intent) }
     }
 
+    // The audio mode needs no permission but shows a ringing call only when it rings audibly;
+    // with READ_PHONE_STATE, Telecom also reports calls ringing on vibrate or silent.
+    private fun inCall(): Boolean = getSystemService(AudioManager::class.java).mode in CALL_MODES || inTelecomCall()
+
+    private fun inTelecomCall(): Boolean {
+        if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) return false
+        return getSystemService(TelecomManager::class.java).isInCall
+    }
+
     private fun publishState() {
         _state.value = mode?.let { SessionState(it, snoozesLeft()) }
     }
@@ -310,6 +328,12 @@ class SessionService : Service() {
             session?.remainingMs ?: 0,
             alarm.durationMs,
             alarm.inactivitySec,
+        )
+        phase == Session.Phase.ON_CALL -> notifications.onCall(alarm.targetPackage)
+        phase == Session.Phase.RINGING && (session?.playedMs ?: 0) > 0 -> notifications.callEnded(
+            alarm.targetPackage,
+            session?.remainingMs ?: 0,
+            snoozesLeft(),
         )
         everPlayed -> notifications.reset(alarm.targetPackage, snoozesLeft())
         else -> notifications.ringing(alarm.targetPackage, alarm.durationMs, snoozesLeft())
@@ -366,6 +390,15 @@ class SessionService : Service() {
         private const val NANOS_PER_MILLI = 1_000_000L
         private const val VICTORY_WATCH_MS = 30 * 60 * 1000L
         private const val AWAY_TICKS_BEFORE_VICTORY = 3
+        private const val CALL_HOLD_MS = 30 * 60 * 1000L
+        private val CALL_MODES = setOf(
+            AudioManager.MODE_RINGTONE,
+            AudioManager.MODE_IN_CALL,
+            AudioManager.MODE_IN_COMMUNICATION,
+            AudioManager.MODE_CALL_SCREENING,
+            AudioManager.MODE_CALL_REDIRECT,
+            AudioManager.MODE_COMMUNICATION_REDIRECT,
+        )
         private const val EXTRA_MODE = "mode"
         private const val EXTRA_ALARM_ID = "alarm_id"
         private const val NO_ALARM = -1L

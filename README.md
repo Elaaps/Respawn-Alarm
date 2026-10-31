@@ -30,6 +30,7 @@ An alarm clock you can only stop by playing. When it rings, you have to actively
 
 - **Which app is in the foreground:** the usage events log (`UsageStatsManager`), hence the "Usage access" permission.
 - **Whether you touch the screen:** Respawn Alarm puts a 1×1 px transparent window over other apps, which Android notifies each time a finger goes down anywhere on screen (`FLAG_WATCH_OUTSIDE_TOUCH`). Android hides where the touch landed; the app only learns that there was one. This needs the "Display over other apps" permission.
+- **Whether a call is ringing:** the alarm pauses during a call and keeps your play time. Without any permission, Android only reports a call once it rings audibly or is answered; the optional "Phone" permission (`READ_PHONE_STATE`) lets the app also see a call ringing on vibrate or silent.
 
 ## Install
 

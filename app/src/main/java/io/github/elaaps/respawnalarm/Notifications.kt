@@ -47,6 +47,17 @@ class Notifications(private val context: Context) {
         .addSnoozeAction(snoozesLeft)
         .build()
 
+    fun onCall(target: String?): Notification = alarmBuilder(target)
+        .setContentTitle(context.getString(R.string.notif_on_call_title))
+        .setContentText(context.getString(R.string.notif_on_call_text))
+        .build()
+
+    fun callEnded(target: String?, remainingMs: Long, snoozesLeft: Int): Notification = alarmBuilder(target)
+        .setContentTitle(context.getString(R.string.notif_call_ended_title))
+        .setContentText(context.getString(R.string.notif_call_ended_text, appLabel(context, target), formatDuration(remainingMs)))
+        .addSnoozeAction(snoozesLeft)
+        .build()
+
     fun snoozed(target: String?, until: LocalTime): Notification = alarmBuilder(target)
         .setContentTitle(context.getString(R.string.notif_snoozed_title))
         .setContentText(context.getString(R.string.notif_snoozed_text, formatClockTime(context, until), appLabel(context, target)))

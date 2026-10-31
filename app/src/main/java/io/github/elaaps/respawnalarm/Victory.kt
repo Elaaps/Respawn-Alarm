@@ -29,7 +29,7 @@ sealed interface OverlayState {
 }
 
 fun overlayState(phase: Session.Phase, remainingMs: Long, durationMs: Long): OverlayState = when (phase) {
-    Session.Phase.RINGING, Session.Phase.LOADING, Session.Phase.SNOOZED -> OverlayState.Asleep
+    Session.Phase.RINGING, Session.Phase.LOADING, Session.Phase.SNOOZED, Session.Phase.ON_CALL -> OverlayState.Asleep
     Session.Phase.PLAYING -> OverlayState.Fighting(remainingMs, remainingMs.toFloat() / durationMs)
     Session.Phase.DONE -> OverlayState.KnockedOut
 }

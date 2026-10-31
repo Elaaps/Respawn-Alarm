@@ -300,12 +300,16 @@ private fun PermissionsGroup(resumeCount: Int, onSetup: () -> Unit) {
     val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         requestCount++
     }
+    val phoneLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        requestCount++
+    }
     val missing = remember(resumeCount, requestCount) {
         Permission.entries.filterNot { Permissions.isGranted(context, it) }
     }
+    val phoneGranted = remember(resumeCount, requestCount) { Permissions.isPhoneStateGranted(context) }
 
     RowGroup(stringResource(R.string.section_permissions)) {
-        if (missing.isEmpty()) {
+        if (missing.isEmpty() && phoneGranted) {
             row { shapes ->
                 SegmentedListItem(
                     shapes = shapes,
@@ -327,6 +331,16 @@ private fun PermissionsGroup(resumeCount: Int, onSetup: () -> Unit) {
                         Permissions.openSettings(context, permission)
                     }
                 }
+            }
+        }
+        if (!phoneGranted) {
+            row { shapes ->
+                ValueRow(
+                    stringResource(R.string.perm_phone_title),
+                    stringResource(R.string.perm_phone_desc),
+                    shapes,
+                    RowIcon(R.drawable.ic_call, IconStyle.OTHER),
+                ) { phoneLauncher.launch(Manifest.permission.READ_PHONE_STATE) }
             }
         }
         row { shapes ->

@@ -20,6 +20,10 @@
     <string name="notif_interrupted_text">Open it to make it ring again</string>
     <string name="notif_done_title">Well done, alarm stopped</string>
     <string name="notif_done_text">%1$s of uninterrupted play</string>
+    <string name="notif_on_call_title">Paused during the call</string>
+    <string name="notif_on_call_text">Rings again when the call ends</string>
+    <string name="notif_call_ended_title">Call ended</string>
+    <string name="notif_call_ended_text">Go back to %1$s, %2$s left to play</string>
     <string name="notif_snoozed_title">Snoozed</string>
     <string name="notif_snoozed_text">Rings again at %1$s, unless you play %2$s first</string>
     <plurals name="action_snooze">
@@ -41,6 +45,8 @@
     <string name="perm_battery_desc">So that the system does not kill the alarm.</string>
     <string name="perm_exact_alarm_title">Alarms &amp; reminders</string>
     <string name="perm_exact_alarm_desc">To ring right on time.</string>
+    <string name="perm_phone_title">Phone (optional)</string>
+    <string name="perm_phone_desc">To pause the alarm as soon as a call rings, even on vibrate.</string>
 
     <string name="ringing_message">Play %1$s of %2$s to beat it.</string>
     <string name="ringing_boss_label">Boss · %1$s alarm</string>

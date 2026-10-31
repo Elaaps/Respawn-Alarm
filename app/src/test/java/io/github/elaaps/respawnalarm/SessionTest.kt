@@ -266,12 +266,90 @@ class SessionTest {
         assertEquals(Phase.RINGING, phase)
     }
 
-    private fun session(maxSnoozes: Int = 0, loadingGraceMs: Long = 0) = Session(
+    @Test
+    fun `tick, when a call takes over while playing, pauses and keeps play time`() {
+        val session = session(callHoldMs = 60_000)
+        session.playContinuously(from = 0, until = 3_000)
+
+        val phase = session.tick(now = 3_000, targetInForeground = false, lastTouchAt = 2_500, inCall = true)
+
+        assertEquals(Phase.ON_CALL, phase)
+        assertEquals(2_900, session.playedMs)
+        assertEquals(0, session.resets)
+    }
+
+    @Test
+    fun `tick, when a call ends, rings again and keeps play time`() {
+        val session = session(callHoldMs = 60_000)
+        session.playContinuously(from = 0, until = 3_000)
+        session.tick(now = 3_000, targetInForeground = false, lastTouchAt = 2_500, inCall = true)
+
+        val phase = session.tick(now = 20_000, targetInForeground = false, lastTouchAt = 2_500, inCall = false)
+
+        assertEquals(Phase.RINGING, phase)
+        assertEquals(2_900, session.playedMs)
+    }
+
+    @Test
+    fun `tick, back in the target app after a call, goes on from the kept play time`() {
+        val session = session(callHoldMs = 60_000)
+        session.playContinuously(from = 0, until = 3_000)
+        session.tick(now = 3_000, targetInForeground = false, lastTouchAt = 2_500, inCall = true)
+        session.tick(now = 20_000, targetInForeground = false, lastTouchAt = 2_500, inCall = false)
+
+        val phase = session.playContinuously(from = 30_000, until = 32_300)
+
+        assertEquals(Phase.DONE, phase)
+    }
+
+    @Test
+    fun `tick, when a call goes on beyond the hold limit, rings again`() {
+        val session = session(callHoldMs = 60_000)
+        session.tick(now = 0, targetInForeground = false, lastTouchAt = null, inCall = true)
+
+        val phase = session.tick(now = 60_000, targetInForeground = false, lastTouchAt = null, inCall = true)
+
+        assertEquals(Phase.RINGING, phase)
+    }
+
+    @Test
+    fun `tick, when the alarm rings during a call, keeps quiet`() {
+        val session = session(callHoldMs = 60_000)
+
+        val phase = session.tick(now = 0, targetInForeground = false, lastTouchAt = null, inCall = true)
+
+        assertEquals(Phase.ON_CALL, phase)
+    }
+
+    @Test
+    fun `tick, when still playing during a call, keeps counting play time`() {
+        val session = session(callHoldMs = 60_000)
+        session.playContinuously(from = 0, until = 3_000)
+
+        val phase = session.tick(now = 3_000, targetInForeground = true, lastTouchAt = 3_000, inCall = true)
+
+        assertEquals(Phase.PLAYING, phase)
+        assertEquals(3_000, session.playedMs)
+    }
+
+    @Test
+    fun `tick, during a call without a call hold, resets play time`() {
+        val session = session()
+        session.playContinuously(from = 0, until = 3_000)
+
+        val phase = session.tick(now = 3_000, targetInForeground = false, lastTouchAt = 2_500, inCall = true)
+
+        assertEquals(Phase.RINGING, phase)
+        assertEquals(0, session.playedMs)
+    }
+
+    private fun session(maxSnoozes: Int = 0, loadingGraceMs: Long = 0, callHoldMs: Long = 0) = Session(
         durationMs = 5_000,
         inactivityMs = 1_000,
         snoozeMs = 60_000,
         maxSnoozes = maxSnoozes,
         loadingGraceMs = loadingGraceMs,
+        callHoldMs = callHoldMs,
     )
 
     private fun Session.playContinuously(from: Long, until: Long): Phase {

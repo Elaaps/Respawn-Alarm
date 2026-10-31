@@ -45,6 +45,9 @@ object Permissions {
         Permission.EXACT_ALARM -> context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
     }
 
+    fun isPhoneStateGranted(context: Context): Boolean =
+        context.checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+
     @SuppressLint("BatteryLife")
     fun settingsIntent(context: Context, permission: Permission): Intent? {
         val pkg = "package:${context.packageName}".toUri()
