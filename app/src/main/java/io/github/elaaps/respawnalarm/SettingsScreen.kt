@@ -214,24 +214,17 @@ private fun LoadingGraceRow(settings: GlobalSettings, shapes: ListItemShapes, on
         RowIcon(R.drawable.ic_hourglass_top, IconStyle.STOP),
     ) { open = true }
     if (open) {
-        AlertDialog(
-            onDismissRequest = { open = false },
-            title = { Text(stringResource(R.string.loading_grace)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RowGroup {
-                        row { rowShapes -> SwitchRow(stringResource(R.string.loading_grace_use), settings.loadingGraceEnabled, toggle, rowShapes) }
-                    }
-                    LabeledNumberChoices(
-                        stringResource(R.string.loading_grace_length),
-                        GlobalSettings.LOADING_GRACE_CHOICES_SEC,
-                        settings.loadingGraceSec,
-                        describe = { stringResource(R.string.seconds_value, it) },
-                    ) { onChange(settings.copy(loadingGraceSec = it)) }
-                }
-            },
-            confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.done)) } },
-        )
+        SettingSheet(stringResource(R.string.loading_grace), onDismiss = { open = false }) {
+            RowGroup {
+                row { rowShapes -> SwitchRow(stringResource(R.string.loading_grace_use), settings.loadingGraceEnabled, toggle, rowShapes) }
+            }
+            LabeledNumberChoices(
+                stringResource(R.string.loading_grace_length),
+                GlobalSettings.LOADING_GRACE_CHOICES_SEC,
+                settings.loadingGraceSec,
+                describe = { stringResource(R.string.seconds_value, it) },
+            ) { onChange(settings.copy(loadingGraceSec = it)) }
+        }
     }
 }
 
@@ -311,26 +304,19 @@ private fun EmergencyStopDelayRow(settings: GlobalSettings, shapes: ListItemShap
         enabled = enabled,
     ) { open = true }
     if (open) {
-        AlertDialog(
-            onDismissRequest = { open = false },
-            title = { Text(stringResource(R.string.emergency_stop_delay)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RowGroup {
-                        row { rowShapes ->
-                            SwitchRow(stringResource(R.string.emergency_stop_delay_use), settings.emergencyStopDelayEnabled, toggle, rowShapes)
-                        }
-                    }
-                    LabeledNumberChoices(
-                        stringResource(R.string.emergency_stop_delay_length),
-                        GlobalSettings.EMERGENCY_STOP_DELAY_CHOICES_MIN,
-                        settings.emergencyStopDelayMin,
-                        describe = { stringResource(R.string.minutes_value, it) },
-                    ) { onChange(settings.copy(emergencyStopDelayMin = it)) }
+        SettingSheet(stringResource(R.string.emergency_stop_delay), onDismiss = { open = false }) {
+            RowGroup {
+                row { rowShapes ->
+                    SwitchRow(stringResource(R.string.emergency_stop_delay_use), settings.emergencyStopDelayEnabled, toggle, rowShapes)
                 }
-            },
-            confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(R.string.done)) } },
-        )
+            }
+            LabeledNumberChoices(
+                stringResource(R.string.emergency_stop_delay_length),
+                GlobalSettings.EMERGENCY_STOP_DELAY_CHOICES_MIN,
+                settings.emergencyStopDelayMin,
+                describe = { stringResource(R.string.minutes_value, it) },
+            ) { onChange(settings.copy(emergencyStopDelayMin = it)) }
+        }
     }
 }
 

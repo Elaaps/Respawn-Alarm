@@ -7,7 +7,6 @@ import android.media.RingtoneManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
@@ -27,7 +26,6 @@ import androidx.compose.material3.SegmentedListItem
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberSliderState
@@ -284,30 +282,22 @@ private fun <T> selectedLabel(choices: List<Choice<T>>, selected: T): String =
     choices.firstOrNull { it.value == selected }?.label.orEmpty()
 
 @Composable
-private fun <T> ChoiceDialog(label: String, choices: List<Choice<T>>, selected: T, onSelect: (T) -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(label) },
-        text = {
-            Column {
-                choices.forEach { choice ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onDismiss()
-                                onSelect(choice.value)
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(selected = choice.value == selected, onClick = null)
-                        Text(choice.label, modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 12.dp))
-                    }
-                }
+private fun <T> ChoiceSheet(label: String, choices: List<Choice<T>>, selected: T, onSelect: (T) -> Unit, onDismiss: () -> Unit) {
+    SettingSheet(label, onDismiss) { close ->
+        Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
+            choices.forEachIndexed { index, choice ->
+                SegmentedListItem(
+                    selected = choice.value == selected,
+                    onClick = {
+                        onSelect(choice.value)
+                        close()
+                    },
+                    shapes = ListItemDefaults.segmentedShapes(index, choices.size),
+                    leadingContent = { RadioButton(selected = choice.value == selected, onClick = null) },
+                ) { Text(choice.label) }
             }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
+        }
+    }
 }
 
 @Composable
@@ -335,12 +325,7 @@ fun VolumeRow(volume: AlarmVolume?, defaultVolume: AlarmVolume?, enabled: Boolea
         enabled,
     ) { editing = true }
     if (editing) {
-        AlertDialog(
-            onDismissRequest = { editing = false },
-            title = { Text(label) },
-            text = { VolumeEditor(shown) { onChange(ownValue(it, defaultVolume)) } },
-            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
-        )
+        SettingSheet(label, onDismiss = { editing = false }) { VolumeEditor(shown) { onChange(ownValue(it, defaultVolume)) } }
     }
 }
 
@@ -439,7 +424,7 @@ fun ToneRow(
         RowIcon(R.drawable.ic_music_note, IconStyle.RINGING),
     ) { choosing = true }
     if (choosing) {
-        ChoiceDialog(label, choices, selected, onDismiss = { choosing = false }, onSelect = { choice ->
+        ChoiceSheet(label, choices, selected, onDismiss = { choosing = false }, onSelect = { choice ->
             when (choice) {
                 ToneChoice.Default -> onChange(null)
                 ToneChoice.System -> onChange(ownValue(Tone.SystemDefault, defaultTone))
@@ -499,19 +484,12 @@ fun SnoozeRow(snooze: Snooze?, defaultSnooze: Snooze?, shapes: ListItemShapes, o
         RowIcon(R.drawable.ic_snooze, IconStyle.RINGING),
     ) { editing = true }
     if (editing) {
-        AlertDialog(
-            onDismissRequest = { editing = false },
-            title = { Text(stringResource(R.string.snooze)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RowGroup {
-                        row { SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle, it) }
-                    }
-                    SnoozeChoices(shown, change)
-                }
-            },
-            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
-        )
+        SettingSheet(stringResource(R.string.snooze), onDismiss = { editing = false }) {
+            RowGroup {
+                row { SwitchRow(stringResource(R.string.snooze_use), shown.enabled, toggle, it) }
+            }
+            SnoozeChoices(shown, change)
+        }
     }
 }
 
