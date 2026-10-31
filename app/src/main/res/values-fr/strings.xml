@@ -208,6 +208,10 @@
     <string name="channel_warnings">Avertissements</string>
     <string name="notif_full_screen_revoked_title">Notifications en plein écran désactivées</string>
     <string name="notif_full_screen_revoked_text">La mise à jour les a désactivées : l\'alarme ne s\'affichera pas sur l\'écran verrouillé. Touche pour les réactiver.</string>
+    <string name="notif_alarm_silent_title">Ton alarme sera silencieuse</string>
+    <string name="notif_alarm_silent_text">Le volume d\'alarme du téléphone est à zéro. Touche pour l\'augmenter.</string>
+    <string name="notif_alarm_low_title">Ton alarme sonnera faiblement</string>
+    <string name="notif_alarm_low_text">Le volume d\'alarme du téléphone est bas. Touche pour l\'augmenter.</string>
     <string name="notif_upcoming_title">Alarme à %1$s</string>
     <string name="action_skip">Sauter</string>
 

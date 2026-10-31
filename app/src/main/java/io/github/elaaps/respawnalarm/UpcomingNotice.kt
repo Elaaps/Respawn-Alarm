@@ -62,6 +62,7 @@ class UpcomingReceiver : BroadcastReceiver() {
         when (intent.action) {
             ACTION_SHOW -> AlarmScheduler.nextScheduled(context)?.let { Notifications(context).upcoming(it) }
             ACTION_SKIP -> skip(context, intent)
+            ACTION_CHECK_VOLUME -> AlarmScheduler.nextScheduled(context)?.let { AlarmVolumeCheck.check(context, it) }
         }
     }
 
@@ -78,6 +79,7 @@ class UpcomingReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_SHOW = "io.github.elaaps.respawnalarm.SHOW_UPCOMING"
         const val ACTION_SKIP = "io.github.elaaps.respawnalarm.SKIP_UPCOMING"
+        const val ACTION_CHECK_VOLUME = "io.github.elaaps.respawnalarm.CHECK_VOLUME"
         const val EXTRA_ALARM_ID = "io.github.elaaps.respawnalarm.ALARM_ID"
         const val EXTRA_DATE = "io.github.elaaps.respawnalarm.DATE"
         private const val NO_ALARM = -1L

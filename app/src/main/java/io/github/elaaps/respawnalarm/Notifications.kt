@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Icon
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.ui.graphics.toArgb
 import java.time.LocalTime
 
@@ -185,6 +186,31 @@ class Notifications(private val context: Context) {
         manager.notify(ID_FULL_SCREEN, notification)
     }
 
+    fun alarmVolumeWarning(warning: AlarmVolumeWarning) {
+        val open = PendingIntent.getActivity(
+            context,
+            REQUEST_ALARM_VOLUME,
+            Intent(Settings.ACTION_SOUND_SETTINGS),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val (title, text) = when (warning) {
+            AlarmVolumeWarning.SILENT -> R.string.notif_alarm_silent_title to R.string.notif_alarm_silent_text
+            AlarmVolumeWarning.LOW -> R.string.notif_alarm_low_title to R.string.notif_alarm_low_text
+        }
+        val notification = Notification.Builder(context, CHANNEL_WARNINGS)
+            .setSmallIcon(R.drawable.ic_stat_alarm)
+            .setContentTitle(context.getString(title))
+            .setContentText(context.getString(text))
+            .setStyle(Notification.BigTextStyle().bigText(context.getString(text)))
+            .setContentIntent(open)
+            .setOnlyAlertOnce(true)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(ID_ALARM_VOLUME, notification)
+    }
+
+    fun cancelAlarmVolumeWarning() = manager.cancel(ID_ALARM_VOLUME)
+
     fun upcoming(next: ScheduledAlarm) {
         val ringAtMs = next.at.toInstant().toEpochMilli()
         val untilRingMs = ringAtMs - System.currentTimeMillis()
@@ -265,6 +291,7 @@ class Notifications(private val context: Context) {
         private const val ID_DONE = 2
         private const val ID_UPCOMING = 3
         private const val ID_FULL_SCREEN = 4
+        private const val ID_ALARM_VOLUME = 5
         private const val CHANNEL_UPCOMING = "upcoming"
         private const val REQUEST_MAIN = 5
         private const val CHANNEL_ALARM = "alarm"
@@ -276,6 +303,7 @@ class Notifications(private val context: Context) {
         private const val REQUEST_SNOOZE = 4
         private const val REQUEST_VICTORY = 6
         private const val REQUEST_FULL_SCREEN = 7
+        private const val REQUEST_ALARM_VOLUME = 8
         private const val DONE_TIMEOUT_MS = 30 * 60 * 1000L
         private const val MILLIS_PER_SECOND = 1_000L
     }
