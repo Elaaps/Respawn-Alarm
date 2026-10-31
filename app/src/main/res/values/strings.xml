@@ -189,9 +189,11 @@
     <string name="vibrate_forced">Always on while the sound is off</string>
     <string name="volume">Volume</string>
     <string name="volume_phone">Phone volume</string>
-    <string name="volume_max">Maximum</string>
+    <string name="volume_custom">Custom volume</string>
+    <string name="volume_use_phone">Use phone volume</string>
+    <string name="percent_value">%1$d%%</string>
     <string name="crescendo">Gradually increase volume</string>
-    <string name="crescendo_desc">From silence to full volume over 30 s</string>
+    <string name="crescendo_desc">From silence to the set volume over 30 s</string>
 
     <string name="section_overlay">In-game overlay</string>
     <string name="overlay_enabled">Show</string>

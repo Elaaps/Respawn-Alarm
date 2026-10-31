@@ -24,7 +24,7 @@ fun encodeSettings(settings: GlobalSettings): String = JSONObject().apply {
     put(KEY_SOUND, settings.soundEnabled)
     put(KEY_TONE, toneToJson(settings.tone))
     put(KEY_VIBRATE, settings.vibrate)
-    put(KEY_VOLUME, settings.volume.name)
+    put(KEY_VOLUME, volumeToJson(settings.volume))
     put(KEY_CRESCENDO, settings.crescendo)
     put(KEY_SNOOZE, snoozeToJson(settings.snooze))
     put(KEY_LOADING_GRACE_ENABLED, settings.loadingGraceEnabled)
@@ -91,7 +91,7 @@ private fun alarmToJson(alarm: Alarm): JSONObject = JSONObject().apply {
     putOpt(KEY_SOUND, alarm.soundEnabled)
     putOpt(KEY_TONE, alarm.tone?.let(::toneToJson))
     putOpt(KEY_VIBRATE, alarm.vibrate)
-    putOpt(KEY_VOLUME, alarm.volume?.name)
+    putOpt(KEY_VOLUME, alarm.volume?.let(::volumeToJson))
     putOpt(KEY_SNOOZE, alarm.snooze?.let(::snoozeToJson))
 }
 
@@ -157,8 +157,20 @@ private fun JSONObject.durationOrNull(): Int? = intOrNull(KEY_DURATION)?.cappedT
 
 private fun Int.cappedTo(range: IntRange): Int? = coerceAtMost(range.last).takeIf { it in range }
 
-private fun JSONObject.volumeOrNull(): VolumeMode? =
-    stringOrNull(KEY_VOLUME)?.let { name -> VolumeMode.entries.firstOrNull { it.name == name } }
+private fun volumeToJson(volume: AlarmVolume): Any = when (volume) {
+    AlarmVolume.Phone -> VOLUME_PHONE
+    is AlarmVolume.Fixed -> volume.percent
+}
+
+private fun JSONObject.volumeOrNull(): AlarmVolume? {
+    val percent = intOrNull(KEY_VOLUME)
+    if (percent != null) return percent.takeIf { it in AlarmVolume.Fixed.PERCENT_RANGE }?.let { AlarmVolume.Fixed(it) }
+    return when (stringOrNull(KEY_VOLUME)) {
+        VOLUME_PHONE -> AlarmVolume.Phone
+        LEGACY_VOLUME_MAX -> AlarmVolume.Fixed.MAX
+        else -> null
+    }
+}
 
 private const val KEY_ID = "id"
 private const val KEY_HOUR = "hour"
@@ -176,6 +188,8 @@ private const val KEY_TYPE = "type"
 private const val KEY_URI = "uri"
 private const val KEY_VIBRATE = "vibrate"
 private const val KEY_VOLUME = "volume"
+private const val VOLUME_PHONE = "PHONE"
+private const val LEGACY_VOLUME_MAX = "MAX"
 private const val KEY_CRESCENDO = "crescendo"
 private const val KEY_SNOOZE = "snooze"
 private const val KEY_SNOOZE_COUNT = "max_count"

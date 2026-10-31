@@ -50,7 +50,7 @@ class AlarmTest {
             durationSec = 120,
             tone = Tone.Custom("content://tone"),
             vibrate = false,
-            volume = VolumeMode.PHONE,
+            volume = AlarmVolume.Phone,
             snooze = Snooze(maxCount = 2, minutes = 3),
         )
         val alarm = Alarm(id = 4, hour = 7, minute = 0)
@@ -67,7 +67,7 @@ class AlarmTest {
                 soundEnabled = true,
                 tone = Tone.Custom("content://tone"),
                 vibrate = false,
-                volume = VolumeMode.PHONE,
+                volume = AlarmVolume.Phone,
                 crescendo = false,
                 snooze = Snooze(maxCount = 2, minutes = 3),
                 loadingGraceSec = 0,
@@ -106,14 +106,14 @@ class AlarmTest {
             durationSec = 600,
             tone = Tone.SystemDefault,
             vibrate = true,
-            volume = VolumeMode.MAX,
+            volume = AlarmVolume.Fixed.MAX,
             snooze = Snooze.OFF,
         )
 
         val resolved = defaults.copy(tone = Tone.Custom("content://tone"), vibrate = false).resolve(alarm)
 
         assertEquals(
-            listOf("com.example.other", 600, Tone.SystemDefault, true, VolumeMode.MAX, Snooze.OFF),
+            listOf("com.example.other", 600, Tone.SystemDefault, true, AlarmVolume.Fixed.MAX, Snooze.OFF),
             listOf(resolved.targetPackage, resolved.durationSec, resolved.tone, resolved.vibrate, resolved.volume, resolved.snooze),
         )
     }

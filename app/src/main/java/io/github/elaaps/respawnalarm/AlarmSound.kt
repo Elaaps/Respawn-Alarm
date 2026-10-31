@@ -14,6 +14,7 @@ import android.os.VibrationEffect
 import android.os.VibratorManager
 import androidx.core.net.toUri
 import java.io.IOException
+import kotlin.math.roundToInt
 
 class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm) {
     private val audioManager = context.getSystemService(AudioManager::class.java)
@@ -22,12 +23,29 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
     private var player: MediaPlayer? = null
     private var originalVolume: Int? = null
     private var startedAt = 0L
+    private val forcedLevel: Int? = (alarm.volume as? AlarmVolume.Fixed)?.let {
+        val stream = AudioManager.STREAM_ALARM
+        streamLevel(it.percent, audioManager.getStreamMinVolume(stream), audioManager.getStreamMaxVolume(stream))
+    }
 
     private val fadeIn = object : Runnable {
         override fun run() {
             val level = crescendoLevel(SystemClock.elapsedRealtime() - startedAt)
             setPlayerVolume(level)
             if (level < 1f) handler.postDelayed(this, FADE_STEP_MS)
+        }
+    }
+
+    // No public callback reports volume changes: the volume keys would change the alarm otherwise.
+    private val holdVolume = object : Runnable {
+        override fun run() {
+            val level = forcedLevel ?: return
+            val stream = AudioManager.STREAM_ALARM
+            if (audioManager.isStreamMute(stream)) {
+                ignoring<SecurityException> { audioManager.adjustStreamVolume(stream, AudioManager.ADJUST_UNMUTE, 0) }
+            }
+            if (audioManager.getStreamVolume(stream) != level) setAlarmVolume(level)
+            handler.postDelayed(this, VOLUME_CHECK_MS)
         }
     }
 
@@ -47,7 +65,10 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
     }
 
     private fun startSound() {
-        if (alarm.volume == VolumeMode.MAX) forceVolume()
+        if (forcedLevel != null) {
+            forceVolume(forcedLevel)
+            handler.postDelayed(holdVolume, VOLUME_CHECK_MS)
+        }
         val current = player ?: createPlayer()?.also { player = it }
         startedAt = SystemClock.elapsedRealtime()
         if (alarm.crescendo) {
@@ -61,6 +82,7 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
         if (!isPlaying) return
         isPlaying = false
         handler.removeCallbacks(fadeIn)
+        handler.removeCallbacks(holdVolume)
         ignoring<IllegalStateException> { player?.pause() }
         vibrator.cancel()
     }
@@ -73,10 +95,10 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
         originalVolume = null
     }
 
-    private fun forceVolume() {
+    private fun forceVolume(level: Int) {
         val stream = AudioManager.STREAM_ALARM
         if (originalVolume == null) originalVolume = audioManager.getStreamVolume(stream)
-        setAlarmVolume(audioManager.getStreamMaxVolume(stream))
+        setAlarmVolume(level)
     }
 
     private fun setAlarmVolume(volume: Int) {
@@ -122,9 +144,13 @@ class AlarmSound(private val context: Context, private val alarm: ResolvedAlarm)
 
     private companion object {
         const val FADE_STEP_MS = 1_000L
+        const val VOLUME_CHECK_MS = 200L
     }
 }
 
 const val CRESCENDO_MS = 30_000L
 
 fun crescendoLevel(elapsedMs: Long): Float = (elapsedMs.toFloat() / CRESCENDO_MS).coerceIn(0f, 1f)
+
+fun streamLevel(percent: Int, min: Int, max: Int): Int =
+    (max * percent.toFloat() / AlarmVolume.Fixed.MAX_PERCENT).roundToInt().coerceIn(min, max)

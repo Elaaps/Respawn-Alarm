@@ -124,14 +124,9 @@ private fun RingingGroup(settings: GlobalSettings, onChange: (GlobalSettings) ->
             ) { tone -> tone?.let { onChange(settings.copy(tone = it)) } }
         }
         row { shapes ->
-            ChoiceRow(
-                stringResource(R.string.volume),
-                VolumeMode.entries.map { Choice(it, volumeLabel(it)) },
-                settings.volume,
-                shapes,
-                RowIcon(R.drawable.ic_volume_up, IconStyle.RINGING),
-                enabled = settings.soundEnabled,
-            ) { onChange(settings.copy(volume = it)) }
+            VolumeRow(settings.volume, defaultVolume = null, settings.soundEnabled, shapes) { volume ->
+                volume?.let { onChange(settings.copy(volume = it)) }
+            }
         }
         row { shapes ->
             SwitchRow(

@@ -280,21 +280,6 @@ fun <T> ConnectedChoiceRow(
     ) { Text(label) }
 }
 
-@Composable
-fun <T> ChoiceRow(
-    label: String,
-    choices: List<Choice<T>>,
-    selected: T,
-    shapes: ListItemShapes,
-    icon: RowIcon? = null,
-    enabled: Boolean = true,
-    onSelect: (T) -> Unit,
-) {
-    var choosing by remember { mutableStateOf(false) }
-    ValueRow(label, selectedLabel(choices, selected), shapes, icon, enabled) { choosing = true }
-    if (choosing) ChoiceDialog(label, choices, selected, onSelect) { choosing = false }
-}
-
 private fun <T> selectedLabel(choices: List<Choice<T>>, selected: T): String =
     choices.firstOrNull { it.value == selected }?.label.orEmpty()
 
@@ -332,12 +317,67 @@ fun defaultLabel(value: String): String = stringResource(R.string.use_default, v
 fun markDefault(label: String, isDefault: Boolean): String = if (isDefault) defaultLabel(label) else label
 
 @Composable
-fun volumeLabel(volume: VolumeMode): String = stringResource(
-    when (volume) {
-        VolumeMode.PHONE -> R.string.volume_phone
-        VolumeMode.MAX -> R.string.volume_max
-    },
-)
+private fun volumeLabel(volume: AlarmVolume): String = when (volume) {
+    AlarmVolume.Phone -> stringResource(R.string.volume_phone)
+    is AlarmVolume.Fixed -> stringResource(R.string.percent_value, volume.percent)
+}
+
+@Composable
+fun VolumeRow(volume: AlarmVolume?, defaultVolume: AlarmVolume?, enabled: Boolean, shapes: ListItemShapes, onChange: (AlarmVolume?) -> Unit) {
+    var editing by remember { mutableStateOf(false) }
+    val shown = volume ?: defaultVolume ?: GlobalSettings().volume
+    val label = stringResource(R.string.volume)
+    ValueRow(
+        label,
+        markDefault(volumeLabel(shown), isDefault = volume == null && defaultVolume != null),
+        shapes,
+        RowIcon(R.drawable.ic_volume_up, IconStyle.RINGING),
+        enabled,
+    ) { editing = true }
+    if (editing) {
+        AlertDialog(
+            onDismissRequest = { editing = false },
+            title = { Text(label) },
+            text = { VolumeEditor(shown) { onChange(ownValue(it, defaultVolume)) } },
+            confirmButton = { TextButton(onClick = { editing = false }) { Text(stringResource(R.string.done)) } },
+        )
+    }
+}
+
+@Composable
+private fun VolumeEditor(shown: AlarmVolume, onChange: (AlarmVolume) -> Unit) {
+    val stops = AlarmVolume.Fixed.PERCENT_STOPS
+    val usesPhone = shown == AlarmVolume.Phone
+    val shownPercent = (shown as? AlarmVolume.Fixed)?.percent ?: AlarmVolume.Fixed.MAX_PERCENT
+    val slider = rememberSliderState(
+        value = nearestStopIndex(stops, shownPercent).toFloat(),
+        steps = stops.size - 2,
+        trackRange = 0f..stops.lastIndex.toFloat(),
+    )
+    val pickedPercent = stops[slider.value.roundToInt()]
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        RowGroup {
+            row { shapes ->
+                SwitchRow(
+                    stringResource(R.string.volume_use_phone),
+                    usesPhone,
+                    { useIt -> onChange(if (useIt) AlarmVolume.Phone else AlarmVolume.Fixed(pickedPercent)) },
+                    shapes,
+                )
+            }
+        }
+        Row {
+            Text(stringResource(R.string.volume_custom), modifier = Modifier.weight(1f))
+            Text(stringResource(R.string.percent_value, pickedPercent), style = MaterialTheme.typography.titleMedium)
+        }
+        Slider(
+            state = slider,
+            enabled = !usesPhone,
+            onValueChange = { slider.value = it },
+            onValueChangeFinished = { onChange(AlarmVolume.Fixed(stops[slider.value.roundToInt()])) },
+        )
+    }
+}
 
 fun toneLabel(context: Context, tone: Tone): String = when (tone) {
     Tone.SystemDefault -> context.getString(R.string.tone_system)

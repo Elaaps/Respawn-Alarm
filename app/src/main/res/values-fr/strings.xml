@@ -188,9 +188,11 @@
     <string name="vibrate_forced">Toujours activé quand le son est coupé</string>
     <string name="volume">Volume</string>
     <string name="volume_phone">Volume du téléphone</string>
-    <string name="volume_max">Maximum</string>
+    <string name="volume_custom">Volume personnalisé</string>
+    <string name="volume_use_phone">Utiliser le volume du téléphone</string>
+    <string name="percent_value">%1$d\u00A0%%</string>
     <string name="crescendo">Augmenter progressivement le volume</string>
-    <string name="crescendo_desc">Du silence au volume plein en 30 s</string>
+    <string name="crescendo_desc">Du silence au volume réglé en 30 s</string>
 
     <string name="section_overlay">Overlay en jeu</string>
     <string name="overlay_enabled">Afficher</string>

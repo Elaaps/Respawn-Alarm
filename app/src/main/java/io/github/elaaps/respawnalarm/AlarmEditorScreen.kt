@@ -176,14 +176,7 @@ private fun OverrideGroups(alarm: Alarm, settings: GlobalSettings, onChange: (Al
             ) { onChange(alarm.copy(tone = it)) }
         }
         row { shapes ->
-            ChoiceRow(
-                stringResource(R.string.volume),
-                VolumeMode.entries.map { Choice(it, markDefault(volumeLabel(it), isDefault = it == settings.volume)) },
-                resolved.volume,
-                shapes,
-                RowIcon(R.drawable.ic_volume_up, IconStyle.RINGING),
-                enabled = resolved.soundEnabled,
-            ) { onChange(alarm.copy(volume = ownValue(it, settings.volume))) }
+            VolumeRow(alarm.volume, settings.volume, resolved.soundEnabled, shapes) { onChange(alarm.copy(volume = it)) }
         }
         row { shapes -> VibrateRow(resolved, shapes) { onChange(alarm.copy(vibrate = ownValue(it, settings.vibrate))) } }
         row { shapes -> SnoozeRow(alarm.snooze, defaultSnooze = settings.snooze, shapes) { onChange(alarm.copy(snooze = it)) } }

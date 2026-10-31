@@ -7,10 +7,22 @@ import kotlin.time.Duration.Companion.minutes
 
 fun <T> ownValue(value: T, default: T?): T? = if (value == default) null else value
 
-enum class VolumeMode {
-    PHONE,
+sealed interface AlarmVolume {
+    data object Phone : AlarmVolume
 
-    MAX,
+    data class Fixed(val percent: Int) : AlarmVolume {
+        init {
+            require(percent in PERCENT_RANGE) { "percent must be in $PERCENT_RANGE, was $percent" }
+        }
+
+        companion object {
+            const val MAX_PERCENT = 100
+            val PERCENT_RANGE = 10..MAX_PERCENT
+            val PERCENT_STOPS = (PERCENT_RANGE step 10).toList()
+
+            val MAX = Fixed(MAX_PERCENT)
+        }
+    }
 }
 
 enum class OverlayStyle {
@@ -56,7 +68,7 @@ data class Alarm(
     val soundEnabled: Boolean? = null,
     val tone: Tone? = null,
     val vibrate: Boolean? = null,
-    val volume: VolumeMode? = null,
+    val volume: AlarmVolume? = null,
     val snooze: Snooze? = null,
 ) {
     init {
@@ -83,7 +95,7 @@ data class GlobalSettings(
     val soundEnabled: Boolean = true,
     val tone: Tone = Tone.SystemDefault,
     val vibrate: Boolean = true,
-    val volume: VolumeMode = VolumeMode.MAX,
+    val volume: AlarmVolume = AlarmVolume.Fixed.MAX,
     val crescendo: Boolean = false,
     val snooze: Snooze = Snooze.OFF,
     val loadingGraceEnabled: Boolean = false,
@@ -178,7 +190,7 @@ data class ResolvedAlarm(
     val soundEnabled: Boolean,
     val tone: Tone,
     val vibrate: Boolean,
-    val volume: VolumeMode,
+    val volume: AlarmVolume,
     val crescendo: Boolean,
     val snooze: Snooze,
     val loadingGraceSec: Int,

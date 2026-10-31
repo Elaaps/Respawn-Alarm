@@ -24,7 +24,7 @@ class SettingsJsonTest {
                 soundEnabled = false,
                 tone = Tone.Custom("content://media/tone/3"),
                 vibrate = false,
-                volume = VolumeMode.PHONE,
+                volume = AlarmVolume.Phone,
                 snooze = Snooze(maxCount = 2, minutes = 10),
             ),
         )
@@ -77,7 +77,7 @@ class SettingsJsonTest {
             soundEnabled = false,
             tone = Tone.Custom("content://media/tone/3"),
             vibrate = false,
-            volume = VolumeMode.PHONE,
+            volume = AlarmVolume.Phone,
             crescendo = true,
             snooze = Snooze(maxCount = 3, minutes = 7, enabled = false),
             loadingGraceEnabled = true,
@@ -152,6 +152,42 @@ class SettingsJsonTest {
         val alarm = decodeAlarms(json).single()
 
         assertEquals(1800, alarm.durationSec)
+    }
+
+    @Test
+    fun `decodeSettings, of a custom volume, gives it back unchanged`() {
+        val settings = GlobalSettings(volume = AlarmVolume.Fixed(percent = 40))
+
+        val decoded = decodeSettings(encodeSettings(settings))
+
+        assertEquals(AlarmVolume.Fixed(percent = 40), decoded.volume)
+    }
+
+    @Test
+    fun `decodeSettings, with the former maximum volume, gives full volume`() {
+        val json = """{"volume":"MAX"}"""
+
+        val decoded = decodeSettings(json)
+
+        assertEquals(AlarmVolume.Fixed(percent = 100), decoded.volume)
+    }
+
+    @Test
+    fun `decodeAlarms, with a former maximum volume, gives full volume`() {
+        val json = """[{"id":1,"hour":7,"minute":0,"volume":"MAX"}]"""
+
+        val alarm = decodeAlarms(json).single()
+
+        assertEquals(AlarmVolume.Fixed(percent = 100), alarm.volume)
+    }
+
+    @Test
+    fun `decodeAlarms, with a volume out of range, lets the alarm use the default`() {
+        val json = """[{"id":1,"hour":7,"minute":0,"volume":150}]"""
+
+        val alarm = decodeAlarms(json).single()
+
+        assertNull(alarm.volume)
     }
 
     @Test
